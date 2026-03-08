@@ -1,0 +1,48 @@
+camera_id: office_cam_1
+model:
+  path: yolo11n.pt
+  confidence: 0.35
+  device: cpu
+  classes:
+    - person
+    - car
+    - truck
+    - bus
+
+tracking:
+  iou_threshold: 0.3
+  max_age_frames: 30
+  min_hits: 1
+
+events:
+  intrusion:
+    enabled: true
+    cooldown_seconds: 5
+  loitering:
+    enabled: true
+    threshold_seconds: 10
+    cooldown_seconds: 20
+
+input:
+  source: 0
+
+output:
+  show_window: false
+  save_annotated_video: true
+  annotated_video_path: data/outputs/annotated.mp4
+  alerts_dir: data/outputs/alerts
+  log_path: data/outputs/events.jsonl
+  buffer_seconds: 3
+
+dashboard:
+  enabled: false
+  endpoint: http://127.0.0.1:8000/ingest
+  timeout_seconds: 1.0
+
+zones:
+  - name: restricted_lab
+    points:
+      - [320, 120]
+      - [560, 120]
+      - [620, 420]
+      - [280, 420]

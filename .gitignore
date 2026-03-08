@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.mp4
+*.jpg
+*.png
+.DS_Store
+data/outputs/*
+!data/outputs/.gitkeep
+demo/screenshots/*
+!demo/screenshots/.gitkeep
+models/*
+!models/.gitkeep

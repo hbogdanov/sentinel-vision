@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sentinel-vision"
+version = "0.1.0"
+description = "Real-time safety, anomaly, and intrusion detection pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.115",
+  "numpy>=1.26",
+  "opencv-python>=4.10",
+  "PyYAML>=6.0",
+  "shapely>=2.0",
+  "ultralytics>=8.3",
+  "uvicorn>=0.34",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
