@@ -2,9 +2,9 @@
 
 Sentinel Vision is a real-time safety, anomaly, and intrusion detection pipeline for webcam feeds, video files, or RTSP streams. It detects people and vehicles, overlays tracks, evaluates event logic such as restricted-zone entry and loitering, and saves structured alerts for downstream dashboards.
 
-## Why this repo exists
+## Overview
 
-This project is scoped as a deployable computer-vision system instead of a notebook demo:
+Sentinel Vision processes live or recorded video streams and produces annotated outputs plus structured safety events:
 
 - Input: webcam, local video file, or RTSP stream
 - Detection: people, vehicles, restricted-zone entry, unusual motion hooks
@@ -55,7 +55,7 @@ pip install -r requirements.txt
 
 ## Run
 
-Use the default intrusion scenario:
+Run against a local video file:
 
 ```bash
 python -m src.main --config configs/default.yaml --source data/samples/demo.mp4
@@ -110,13 +110,7 @@ python -m pytest -q
 - Snapshot and clip are saved
 - JSON event is appended to disk
 
-## Resume-ready framing
-
-- Built a real-time surveillance analytics pipeline in Python using YOLO, OpenCV, and multi-object tracking for intrusion and loitering detection from live or recorded streams.
-- Implemented event reasoning for polygon-zone entry, dwell time, and alert suppression with structured JSON logs and automatic snapshot/clip generation.
-- Designed a modular inference and alerting stack with YAML-based configuration, demoable outputs, and optional FastAPI dashboard hooks.
-
-## Future work
+## Roadmap
 
 - Replace the lightweight tracker with ByteTrack or DeepSORT
 - Add abandoned-object logic

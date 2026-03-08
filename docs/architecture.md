@@ -13,7 +13,7 @@
 ## Modules
 
 - `src/inference/detector.py`: detector interface and Ultralytics-backed implementation
-- `src/inference/tracker.py`: lightweight IoU tracker for the MVP
+- `src/inference/tracker.py`: lightweight IoU tracker for the current implementation
 - `src/inference/pipeline.py`: orchestration of decode, inference, event logic, rendering, and outputs
 - `src/events/zones.py`: polygon utilities and point-in-zone checks
 - `src/events/intrusion.py`: zone-entry event logic with cooldown suppression
@@ -23,9 +23,9 @@
 - `src/io/logger.py`: JSONL event sink
 - `src/api/app.py`: minimal FastAPI app for alert ingestion/history
 
-## MVP boundaries
+## Current scope
 
-The current implementation optimizes for a fast, reproducible demo:
+The current implementation is focused on the core pipeline:
 
 - Detection uses an off-the-shelf YOLO model
 - Tracking uses a built-in tracker rather than ByteTrack or DeepSORT
