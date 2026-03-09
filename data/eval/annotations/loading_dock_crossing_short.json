@@ -1,0 +1,16 @@
+{
+  "video_id": "loading_dock_crossing_short",
+  "fps": 10,
+  "duration_seconds": 8.0,
+  "detections": [
+    {"frame_index": 0, "track_id": 1, "class": "person", "bbox": [0, 0, 10, 20]},
+    {"frame_index": 0, "track_id": 2, "class": "person", "bbox": [20, 0, 30, 20]},
+    {"frame_index": 20, "track_id": 1, "class": "person", "bbox": [5, 0, 15, 20]},
+    {"frame_index": 20, "track_id": 2, "class": "person", "bbox": [15, 0, 25, 20]},
+    {"frame_index": 40, "track_id": 1, "class": "person", "bbox": [10, 0, 20, 20]},
+    {"frame_index": 40, "track_id": 2, "class": "person", "bbox": [10, 0, 20, 20]},
+    {"frame_index": 60, "track_id": 1, "class": "person", "bbox": [15, 0, 25, 20]},
+    {"frame_index": 60, "track_id": 2, "class": "person", "bbox": [5, 0, 15, 20]}
+  ],
+  "events": []
+}

@@ -1,0 +1,219 @@
+{
+  "summary": {
+    "num_videos": 3,
+    "total_duration_seconds": 26.0,
+    "detection_by_class": {
+      "person": {
+        "precision": 1.0,
+        "recall": 0.9444,
+        "tp": 17,
+        "fp": 0,
+        "fn": 1
+      }
+    },
+    "tracking": {
+      "mota": 0.8333,
+      "id_switches": 2,
+      "matched_count": 17,
+      "fp": 0,
+      "fn": 1,
+      "gt_count": 18,
+      "pred_count": 17
+    },
+    "events_by_type": {
+      "intrusion": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "false_alerts_per_minute": 2.3077,
+        "mean_alert_latency_seconds": 0.0,
+        "mean_alert_timing_error_seconds": 0.0,
+        "tp": 1,
+        "fp": 1,
+        "fn": 0
+      },
+      "loitering": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_alerts_per_minute": 0.0,
+        "mean_alert_latency_seconds": 10.0,
+        "mean_alert_timing_error_seconds": 2.0,
+        "tp": 1,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "events_overall": {
+      "precision": 0.6667,
+      "recall": 1.0,
+      "false_alerts_per_minute": 2.3077,
+      "mean_alert_latency_seconds": 5.0,
+      "mean_alert_timing_error_seconds": 1.0,
+      "tp": 2,
+      "fp": 1,
+      "fn": 0
+    }
+  },
+  "videos": [
+    {
+      "video_id": "office_intrusion_short",
+      "fps": 10.0,
+      "duration_seconds": 6.0,
+      "detection": {
+        "counts_by_class": {
+          "person": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4,
+            "fp": 0,
+            "fn": 0
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 4,
+          "pred_count": 4,
+          "matched_count": 4,
+          "fp": 0,
+          "fn": 0,
+          "id_switches": 0
+        },
+        "metrics": {
+          "mota": 1.0,
+          "id_switches": 0,
+          "matched_count": 4,
+          "fp": 0,
+          "fn": 0,
+          "gt_count": 4,
+          "pred_count": 4
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "intrusion": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_alerts_per_minute": 0.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "latencies": [
+              0.0
+            ],
+            "latency_errors": [
+              0.0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "video_id": "lobby_loiter_short",
+      "fps": 10.0,
+      "duration_seconds": 12.0,
+      "detection": {
+        "counts_by_class": {
+          "person": {
+            "precision": 1.0,
+            "recall": 0.8333,
+            "tp": 5,
+            "fp": 0,
+            "fn": 1
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 6,
+          "pred_count": 5,
+          "matched_count": 5,
+          "fp": 0,
+          "fn": 1,
+          "id_switches": 0
+        },
+        "metrics": {
+          "mota": 0.8333,
+          "id_switches": 0,
+          "matched_count": 5,
+          "fp": 0,
+          "fn": 1,
+          "gt_count": 6,
+          "pred_count": 5
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "loitering": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_alerts_per_minute": 0.0,
+            "mean_alert_latency_seconds": 10.0,
+            "mean_alert_timing_error_seconds": 2.0,
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "latencies": [
+              10.0
+            ],
+            "latency_errors": [
+              2.0
+            ]
+          }
+        }
+      }
+    },
+    {
+      "video_id": "loading_dock_crossing_short",
+      "fps": 10.0,
+      "duration_seconds": 8.0,
+      "detection": {
+        "counts_by_class": {
+          "person": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 8,
+            "fp": 0,
+            "fn": 0
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 8,
+          "pred_count": 8,
+          "matched_count": 8,
+          "fp": 0,
+          "fn": 0,
+          "id_switches": 2
+        },
+        "metrics": {
+          "mota": 0.75,
+          "id_switches": 2,
+          "matched_count": 8,
+          "fp": 0,
+          "fn": 0,
+          "gt_count": 8,
+          "pred_count": 8
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "intrusion": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 7.5,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 1,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          }
+        }
+      }
+    }
+  ]
+}

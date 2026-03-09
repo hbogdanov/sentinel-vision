@@ -1,0 +1,119 @@
+camera_id: central_default
+model:
+  path: yolo11n.pt
+  confidence: 0.35
+  device: cpu
+  classes:
+    - person
+    - car
+    - truck
+    - bus
+
+tracking:
+  type: bytetrack
+
+events:
+  intrusion:
+    enabled: true
+    cooldown_seconds: 5
+  loitering:
+    enabled: true
+    threshold_seconds: 10
+    cooldown_seconds: 20
+  line_crossing:
+    enabled: true
+    cooldown_seconds: 3
+    direction: any
+  wrong_way:
+    enabled: true
+    cooldown_seconds: 10
+    min_displacement_pixels: 25
+    target_classes: [person, car, truck, bus]
+  after_hours_occupancy:
+    enabled: true
+    cooldown_seconds: 60
+    start_time: "08:00"
+    end_time: "18:00"
+    timezone: America/New_York
+    target_classes: [person]
+  vehicle_in_pedestrian_zone:
+    enabled: true
+    cooldown_seconds: 5
+    target_classes: [car, truck, bus, motorcycle, bicycle]
+
+runtime:
+  frame_skip: 0
+  adaptive_frame_skip: false
+  target_processing_fps: 10.0
+  resize_width: 0
+  resize_height: 0
+  timing_log_interval_frames: 120
+  motion_compensation:
+    enabled: true
+    static_camera_assumption: false
+    method: affine
+
+output:
+  show_window: false
+  save_annotated_video: false
+  annotated_video_path: data/outputs/annotated.mp4
+  alerts_dir: data/outputs/alerts
+  log_path: data/outputs/events.jsonl
+  buffer_seconds: 3
+  post_event_seconds: 3
+  duplicate_suppression_seconds: 10
+  clip_writer_queue_size: 16
+  health_status_path: data/outputs/camera_health.json
+
+dashboard:
+  enabled: true
+  endpoint: http://127.0.0.1:8000/ingest
+  timeout_seconds: 1.0
+
+cameras:
+  - camera_id: north_gate
+    input:
+      source: rtsp://user:pass@north-gate/stream
+    perspective:
+      enabled: true
+      image_points:
+        - [120, 420]
+        - [520, 420]
+        - [640, 210]
+        - [40, 210]
+      world_points:
+        - [0, 0]
+        - [12, 0]
+        - [12, 8]
+        - [0, 8]
+    zones:
+      - name: north_restricted
+        type: polygon
+        tags: [restricted, after_hours]
+        metadata:
+          expected_direction: right
+        points:
+          - [180, 250]
+          - [520, 250]
+          - [560, 430]
+          - [140, 430]
+  - camera_id: loading_dock
+    input:
+      source: rtsp://user:pass@loading-dock/stream
+    zones:
+      - name: dock_line
+        type: line
+        tags: [line_crossing]
+        metadata:
+          direction: a_to_b
+        points:
+          - [120, 280]
+          - [620, 280]
+      - name: pedestrian_walkway
+        type: polygon
+        tags: [pedestrian_only]
+        points:
+          - [60, 320]
+          - [240, 320]
+          - [240, 470]
+          - [60, 470]

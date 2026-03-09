@@ -1,0 +1,14 @@
+model:
+  device: cuda
+  path: yolo11s.pt
+  confidence: 0.4
+
+runtime:
+  frame_skip: 0
+  adaptive_frame_skip: false
+  target_processing_fps: 15.0
+  resize_width: 1280
+  resize_height: 0
+
+output:
+  save_annotated_video: true

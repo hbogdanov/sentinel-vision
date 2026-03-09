@@ -31,7 +31,7 @@ class IntrusionDetector:
         for zone in zones:
             for track in tracks:
                 key = (zone.name, track.track_id)
-                inside_now = zone.contains_point(track.center)
+                inside_now = zone.contains_track(track)
                 inside_before = self._inside_state.get(key, False)
                 self._inside_state[key] = inside_now
 

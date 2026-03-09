@@ -1,0 +1,24 @@
+{
+  "video_id": "lobby_loiter_short",
+  "fps": 10,
+  "duration_seconds": 12.0,
+  "detections": [
+    {"frame_index": 0, "track_id": 1, "class": "person", "bbox": [20, 10, 34, 38]},
+    {"frame_index": 20, "track_id": 1, "class": "person", "bbox": [20, 10, 34, 38]},
+    {"frame_index": 40, "track_id": 1, "class": "person", "bbox": [20, 10, 34, 38]},
+    {"frame_index": 60, "track_id": 1, "class": "person", "bbox": [20, 10, 34, 38]},
+    {"frame_index": 80, "track_id": 1, "class": "person", "bbox": [20, 10, 34, 38]},
+    {"frame_index": 100, "track_id": 1, "class": "person", "bbox": [20, 10, 34, 38]}
+  ],
+  "events": [
+    {
+      "event_type": "loitering",
+      "zone": "restricted_lab",
+      "class": "person",
+      "track_id": 1,
+      "entry_frame_index": 0,
+      "frame_index": 80,
+      "match_tolerance_frames": 20
+    }
+  ]
+}

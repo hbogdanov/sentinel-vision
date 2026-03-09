@@ -1,8 +1,12 @@
 fastapi>=0.115
+httpx>=0.28
 numpy>=1.26
 opencv-python>=4.10
+pandas>=2.2
+pydantic>=2.8
 PyYAML>=6.0
 shapely>=2.0
+streamlit>=1.44
 ultralytics>=8.3
 uvicorn>=0.34
 pytest>=8.3

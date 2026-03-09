@@ -1,0 +1,22 @@
+{
+  "video_id": "office_intrusion_short",
+  "fps": 10,
+  "duration_seconds": 6.0,
+  "detections": [
+    {"frame_index": 0, "track_id": 1, "class": "person", "bbox": [0, 0, 10, 20]},
+    {"frame_index": 15, "track_id": 1, "class": "person", "bbox": [3, 0, 13, 20]},
+    {"frame_index": 30, "track_id": 1, "class": "person", "bbox": [6, 0, 16, 20]},
+    {"frame_index": 45, "track_id": 1, "class": "person", "bbox": [9, 0, 19, 20]}
+  ],
+  "events": [
+    {
+      "event_type": "intrusion",
+      "zone": "restricted_lab",
+      "class": "person",
+      "track_id": 1,
+      "entry_frame_index": 30,
+      "frame_index": 30,
+      "match_tolerance_frames": 5
+    }
+  ]
+}

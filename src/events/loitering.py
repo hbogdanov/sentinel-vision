@@ -33,7 +33,7 @@ class LoiteringDetector:
         for zone in zones:
             for track in tracks:
                 key = (zone.name, track.track_id)
-                inside_now = zone.contains_point(track.center)
+                inside_now = zone.contains_track(track)
                 if not inside_now:
                     continue
 

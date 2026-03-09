@@ -10,9 +10,16 @@ model:
     - bus
 
 tracking:
-  iou_threshold: 0.3
+  type: bytetrack
+  high_score_threshold: 0.5
+  low_score_threshold: 0.1
+  new_track_score_threshold: 0.6
+  match_iou_threshold: 0.3
+  secondary_match_iou_threshold: 0.15
   max_age_frames: 30
-  min_hits: 1
+  min_hits: 2
+  appearance_weight: 0.35
+  appearance_threshold: 0.2
 
 events:
   intrusion:
@@ -22,9 +29,65 @@ events:
     enabled: true
     threshold_seconds: 10
     cooldown_seconds: 20
+  line_crossing:
+    enabled: true
+    cooldown_seconds: 3
+    direction: any
+  wrong_way:
+    enabled: true
+    cooldown_seconds: 10
+    min_displacement_pixels: 25
+    target_classes:
+      - person
+      - car
+      - truck
+      - bus
+  after_hours_occupancy:
+    enabled: true
+    cooldown_seconds: 60
+    start_time: "08:00"
+    end_time: "18:00"
+    timezone: America/New_York
+    target_classes:
+      - person
+  vehicle_in_pedestrian_zone:
+    enabled: true
+    cooldown_seconds: 5
+    target_classes:
+      - car
+      - truck
+      - bus
+      - motorcycle
+      - bicycle
 
 input:
   source: 0
+  read_failure_threshold: 30
+  reconnect_attempts: 3
+  reconnect_backoff_seconds: 1.0
+
+runtime:
+  frame_skip: 0
+  adaptive_frame_skip: false
+  target_processing_fps: 10.0
+  resize_width: 0
+  resize_height: 0
+  timing_log_interval_frames: 120
+  motion_compensation:
+    enabled: false
+    static_camera_assumption: true
+    method: affine
+    max_corners: 300
+    quality_level: 0.01
+    min_distance: 8.0
+    min_matches: 12
+    ransac_threshold: 3.0
+    smoothing_factor: 0.8
+
+perspective:
+  enabled: false
+  image_points: []
+  world_points: []
 
 output:
   show_window: false
@@ -33,6 +96,10 @@ output:
   alerts_dir: data/outputs/alerts
   log_path: data/outputs/events.jsonl
   buffer_seconds: 3
+  post_event_seconds: 3
+  duplicate_suppression_seconds: 10
+  clip_writer_queue_size: 16
+  health_status_path: data/outputs/camera_health.json
 
 dashboard:
   enabled: false
@@ -41,8 +108,30 @@ dashboard:
 
 zones:
   - name: restricted_lab
+    type: polygon
+    tags: [restricted, after_hours]
+    metadata:
+      expected_direction: right
     points:
       - [320, 120]
       - [560, 120]
       - [620, 420]
       - [280, 420]
+  - name: loading_bay_line
+    type: line
+    tags: [line_crossing]
+    metadata:
+      direction: a_to_b
+    points:
+      - [220, 240]
+      - [640, 240]
+  - name: pedestrian_walkway
+    type: polygon
+    tags: [pedestrian_only]
+    points:
+      - [80, 300]
+      - [260, 300]
+      - [260, 470]
+      - [80, 470]
+
+cameras: []

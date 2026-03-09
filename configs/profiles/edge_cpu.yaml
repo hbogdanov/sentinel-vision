@@ -1,0 +1,17 @@
+model:
+  device: cpu
+  path: yolo11n.pt
+  confidence: 0.35
+
+runtime:
+  frame_skip: 1
+  adaptive_frame_skip: true
+  target_processing_fps: 8.0
+  resize_width: 960
+  resize_height: 0
+
+output:
+  save_annotated_video: false
+
+dashboard:
+  timeout_seconds: 0.5

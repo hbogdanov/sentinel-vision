@@ -1,0 +1,54 @@
+services:
+  api:
+    build: .
+    command: uvicorn src.api.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      SENTINEL_ALERTS_DB_PATH: /app/data/outputs/alerts.db
+    volumes:
+      - ./data:/app/data
+      - ./configs:/app/configs
+
+  dashboard:
+    build: .
+    command: streamlit run src/api/dashboard.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    environment:
+      SENTINEL_ALERTS_DB_PATH: /app/data/outputs/alerts.db
+    depends_on:
+      - api
+    volumes:
+      - ./data:/app/data
+
+  pipeline:
+    build: .
+    command: /app/docker/start_pipeline.sh
+    environment:
+      SENTINEL_ALERTS_DB_PATH: /app/data/outputs/alerts.db
+      SENTINEL_CONFIG: configs/default.yaml
+      SENTINEL_PROFILE: edge_cpu
+      SENTINEL_DEVICE: cpu
+      SENTINEL_MODEL_PATH: yolo11n.pt
+    depends_on:
+      - api
+    volumes:
+      - ./data:/app/data
+      - ./configs:/app/configs
+
+  pipeline-gpu:
+    build: .
+    command: /app/docker/start_pipeline.sh
+    profiles: ["gpu"]
+    environment:
+      SENTINEL_ALERTS_DB_PATH: /app/data/outputs/alerts.db
+      SENTINEL_CONFIG: configs/default.yaml
+      SENTINEL_PROFILE: edge_gpu
+      SENTINEL_DEVICE: cuda
+      SENTINEL_MODEL_PATH: yolo11s.pt
+    depends_on:
+      - api
+    volumes:
+      - ./data:/app/data
+      - ./configs:/app/configs

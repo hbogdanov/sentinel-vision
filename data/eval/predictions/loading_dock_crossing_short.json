@@ -1,0 +1,26 @@
+{
+  "video_id": "loading_dock_crossing_short",
+  "fps": 10,
+  "duration_seconds": 8.0,
+  "detections": [
+    {"frame_index": 0, "track_id": 31, "class": "person", "bbox": [0, 0, 10, 20], "score": 0.95},
+    {"frame_index": 0, "track_id": 32, "class": "person", "bbox": [20, 0, 30, 20], "score": 0.95},
+    {"frame_index": 20, "track_id": 31, "class": "person", "bbox": [5, 0, 15, 20], "score": 0.94},
+    {"frame_index": 20, "track_id": 32, "class": "person", "bbox": [15, 0, 25, 20], "score": 0.94},
+    {"frame_index": 40, "track_id": 32, "class": "person", "bbox": [10, 0, 20, 20], "score": 0.93},
+    {"frame_index": 40, "track_id": 31, "class": "person", "bbox": [10, 0, 20, 20], "score": 0.93},
+    {"frame_index": 60, "track_id": 32, "class": "person", "bbox": [15, 0, 25, 20], "score": 0.92},
+    {"frame_index": 60, "track_id": 31, "class": "person", "bbox": [5, 0, 15, 20], "score": 0.92}
+  ],
+  "events": [
+    {
+      "event_type": "intrusion",
+      "zone": "restricted_lab",
+      "class": "person",
+      "track_id": 32,
+      "entry_frame_index": 40,
+      "frame_index": 60,
+      "confidence": 0.61
+    }
+  ]
+}

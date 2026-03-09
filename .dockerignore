@@ -1,0 +1,11 @@
+.git
+.gitignore
+.venv
+.pytest_cache
+.pytest_tmp
+pytest_tmp_local
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+data/outputs
