@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Protocol
 
 import numpy as np
+try:
+    from scipy.optimize import linear_sum_assignment
+except ImportError:  # pragma: no cover - fallback path when scipy is unavailable
+    linear_sum_assignment = None
 
 from src.inference.appearance import AppearanceEmbedder, build_appearance_embedder
 from src.inference.detector import Detection
@@ -19,6 +24,8 @@ class Track:
     last_seen_frame: int
     hits: int = 1
     world_center: tuple[float, float] | None = None
+    velocity: tuple[float, float] = (0.0, 0.0)
+    predicted_path: tuple[tuple[float, float], ...] = ()
 
     @property
     def center(self) -> tuple[float, float]:
@@ -57,9 +64,9 @@ class _TrackState:
     velocity: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
     confirmed: bool = False
     embedding: np.ndarray | None = field(default=None, repr=False)
-
-    def predicted_bbox(self) -> tuple[float, float, float, float]:
-        return tuple(coord + delta for coord, delta in zip(self.bbox, self.velocity))
+    recent_boxes: deque[tuple[float, float, float, float]] = field(
+        default_factory=lambda: deque(maxlen=6), repr=False
+    )
 
     def update(
         self,
@@ -74,6 +81,7 @@ class _TrackState:
         self.last_seen_frame = frame_index
         self.hits += 1
         self.misses = 0
+        self.recent_boxes.append(detection.bbox)
         if embedding is not None:
             if self.embedding is None:
                 self.embedding = embedding
@@ -86,7 +94,12 @@ class _TrackState:
     def mark_missed(self) -> None:
         self.misses += 1
 
-    def to_public(self) -> Track:
+    def to_public(
+        self,
+        *,
+        velocity: tuple[float, float] = (0.0, 0.0),
+        predicted_path: tuple[tuple[float, float], ...] = (),
+    ) -> Track:
         return Track(
             track_id=self.track_id,
             bbox=self.bbox,
@@ -95,6 +108,8 @@ class _TrackState:
             last_seen_frame=self.last_seen_frame,
             hits=self.hits,
             world_center=None,
+            velocity=velocity,
+            predicted_path=predicted_path,
         )
 
 
@@ -200,6 +215,10 @@ class ByteTracker:
         secondary_match_iou_threshold: float = 0.15,
         max_age_frames: int = 30,
         min_hits: int = 2,
+        trajectory_prediction_enabled: bool = True,
+        trajectory_history_size: int = 6,
+        trajectory_prediction_horizon: int = 3,
+        trajectory_smoothing: float = 0.65,
     ) -> None:
         self.high_score_threshold = high_score_threshold
         self.low_score_threshold = low_score_threshold
@@ -208,6 +227,10 @@ class ByteTracker:
         self.secondary_match_iou_threshold = secondary_match_iou_threshold
         self.max_age_frames = max_age_frames
         self.min_hits = min_hits
+        self.trajectory_prediction_enabled = trajectory_prediction_enabled
+        self.trajectory_history_size = max(1, trajectory_history_size)
+        self.trajectory_prediction_horizon = max(1, trajectory_prediction_horizon)
+        self.trajectory_smoothing = trajectory_smoothing
         self._next_id = 1
         self._tracks: dict[int, _TrackState] = {}
 
@@ -283,6 +306,9 @@ class ByteTracker:
                 score=detection.score,
                 last_seen_frame=frame_index,
                 confirmed=self.min_hits <= 1,
+                recent_boxes=deque(
+                    [detection.bbox], maxlen=self.trajectory_history_size
+                ),
             )
             self._next_id += 1
 
@@ -290,7 +316,7 @@ class ByteTracker:
         self._promote_confirmed_tracks()
 
         visible_tracks = [
-            track.to_public()
+            self._build_public_track(track)
             for track in self._tracks.values()
             if track.last_seen_frame == frame_index and track.confirmed
         ]
@@ -317,33 +343,25 @@ class ByteTracker:
         detection_ids: list[int],
         threshold: float,
     ) -> tuple[list[tuple[int, int]], set[int], set[int]]:
-        matches: list[tuple[int, int]] = []
         unmatched_track_ids = set(track_ids)
         unmatched_detection_ids = set(detection_ids)
-        candidates: list[tuple[float, int, int]] = []
+        candidates: dict[tuple[int, int], float] = {}
 
         for track_id in track_ids:
             track = self._tracks.get(track_id)
             if track is None:
                 continue
-            predicted_bbox = track.predicted_bbox()
+            predicted_bbox = self._predict_bbox(track)
             for det_idx in detection_ids:
                 detection = detections[det_idx]
                 if detection.label != track.label:
                     continue
                 iou = _iou(predicted_bbox, compensated_boxes[det_idx])
                 if iou >= threshold:
-                    candidates.append((iou, track_id, det_idx))
+                    candidates[(track_id, det_idx)] = iou
 
-        candidates.sort(reverse=True)
-        used_tracks: set[int] = set()
-        used_detections: set[int] = set()
-        for _, track_id, det_idx in candidates:
-            if track_id in used_tracks or det_idx in used_detections:
-                continue
-            matches.append((track_id, det_idx))
-            used_tracks.add(track_id)
-            used_detections.add(det_idx)
+        matches = _solve_assignment(track_ids, detection_ids, candidates)
+        for track_id, det_idx in matches:
             unmatched_track_ids.discard(track_id)
             unmatched_detection_ids.discard(det_idx)
 
@@ -363,6 +381,62 @@ class ByteTracker:
             if track.hits >= self.min_hits:
                 track.confirmed = True
 
+    def _build_public_track(self, track: _TrackState) -> Track:
+        velocity = self._center_velocity(track)
+        predicted_path = self._predict_path(track)
+        return track.to_public(velocity=velocity, predicted_path=predicted_path)
+
+    def _predict_bbox(self, track: _TrackState) -> tuple[float, float, float, float]:
+        if not self.trajectory_prediction_enabled:
+            return track.bbox
+        delta = self._smoothed_bbox_delta(track)
+        horizon = min(track.misses + 1, self.trajectory_prediction_horizon)
+        return tuple(
+            coord + horizon * change for coord, change in zip(track.bbox, delta)
+        )
+
+    def _predict_path(self, track: _TrackState) -> tuple[tuple[float, float], ...]:
+        if not self.trajectory_prediction_enabled:
+            return ()
+        dx1, dy1, dx2, dy2 = self._smoothed_bbox_delta(track)
+        step_x = (dx1 + dx2) / 2.0
+        step_y = (dy1 + dy2) / 2.0
+        if abs(step_x) < 1e-3 and abs(step_y) < 1e-3:
+            return ()
+        center_x, center_y = track.to_public().center
+        return tuple(
+            (
+                center_x + step_x * step,
+                center_y + step_y * step,
+            )
+            for step in range(1, self.trajectory_prediction_horizon + 1)
+        )
+
+    def _center_velocity(self, track: _TrackState) -> tuple[float, float]:
+        dx1, dy1, dx2, dy2 = self._smoothed_bbox_delta(track)
+        return ((dx1 + dx2) / 2.0, (dy1 + dy2) / 2.0)
+
+    def _smoothed_bbox_delta(
+        self, track: _TrackState
+    ) -> tuple[float, float, float, float]:
+        history = list(track.recent_boxes)
+        if len(history) < 2:
+            return track.velocity
+
+        deltas = [
+            tuple(curr - prev for curr, prev in zip(current, previous))
+            for previous, current in zip(history[:-1], history[1:])
+        ]
+        smoothed = deltas[0]
+        for delta in deltas[1:]:
+            smoothed = tuple(
+                ((1.0 - self.trajectory_smoothing) * prior)
+                + (self.trajectory_smoothing * current)
+                for prior, current in zip(smoothed, delta)
+            )
+        track.velocity = smoothed
+        return smoothed
+
 
 class BoTSORTTracker(ByteTracker):
     def __init__(
@@ -378,6 +452,10 @@ class BoTSORTTracker(ByteTracker):
         appearance_threshold: float = 0.2,
         appearance_ambiguous_iou_margin: float = 0.1,
         appearance_embedder: AppearanceEmbedder | None = None,
+        trajectory_prediction_enabled: bool = True,
+        trajectory_history_size: int = 6,
+        trajectory_prediction_horizon: int = 3,
+        trajectory_smoothing: float = 0.65,
     ) -> None:
         super().__init__(
             high_score_threshold=high_score_threshold,
@@ -387,6 +465,10 @@ class BoTSORTTracker(ByteTracker):
             secondary_match_iou_threshold=secondary_match_iou_threshold,
             max_age_frames=max_age_frames,
             min_hits=min_hits,
+            trajectory_prediction_enabled=trajectory_prediction_enabled,
+            trajectory_history_size=trajectory_history_size,
+            trajectory_prediction_horizon=trajectory_prediction_horizon,
+            trajectory_smoothing=trajectory_smoothing,
         )
         self.appearance_weight = appearance_weight
         self.appearance_threshold = appearance_threshold
@@ -478,6 +560,9 @@ class BoTSORTTracker(ByteTracker):
                 last_seen_frame=frame_index,
                 confirmed=self.min_hits <= 1,
                 embedding=embeddings.get(det_idx),
+                recent_boxes=deque(
+                    [detection.bbox], maxlen=self.trajectory_history_size
+                ),
             )
             self._next_id += 1
 
@@ -485,7 +570,7 @@ class BoTSORTTracker(ByteTracker):
         self._promote_confirmed_tracks()
 
         visible_tracks = [
-            track.to_public()
+            self._build_public_track(track)
             for track in self._tracks.values()
             if track.last_seen_frame == frame_index and track.confirmed
         ]
@@ -500,16 +585,15 @@ class BoTSORTTracker(ByteTracker):
         threshold: float,
         embeddings: dict[int, np.ndarray] | None = None,
     ) -> tuple[list[tuple[int, int]], set[int], set[int]]:
-        matches: list[tuple[int, int]] = []
         unmatched_track_ids = set(track_ids)
         unmatched_detection_ids = set(detection_ids)
-        candidates: list[tuple[float, int, int]] = []
+        candidates: dict[tuple[int, int], float] = {}
 
         for track_id in track_ids:
             track = self._tracks.get(track_id)
             if track is None:
                 continue
-            predicted_bbox = track.predicted_bbox()
+            predicted_bbox = self._predict_bbox(track)
             for det_idx in detection_ids:
                 detection = detections[det_idx]
                 if detection.label != track.label:
@@ -525,17 +609,10 @@ class BoTSORTTracker(ByteTracker):
                     score = (
                         1.0 - self.appearance_weight
                     ) * iou + self.appearance_weight * appearance_score
-                candidates.append((score, track_id, det_idx))
+                candidates[(track_id, det_idx)] = score
 
-        candidates.sort(reverse=True)
-        used_tracks: set[int] = set()
-        used_detections: set[int] = set()
-        for _, track_id, det_idx in candidates:
-            if track_id in used_tracks or det_idx in used_detections:
-                continue
-            matches.append((track_id, det_idx))
-            used_tracks.add(track_id)
-            used_detections.add(det_idx)
+        matches = _solve_assignment(track_ids, detection_ids, candidates)
+        for track_id, det_idx in matches:
             unmatched_track_ids.discard(track_id)
             unmatched_detection_ids.discard(det_idx)
 
@@ -571,6 +648,14 @@ def create_tracker(config: dict) -> Tracker:
             ),
             max_age_frames=common["max_age_frames"],
             min_hits=common["min_hits"],
+            trajectory_prediction_enabled=bool(
+                config.get("trajectory_prediction_enabled", True)
+            ),
+            trajectory_history_size=int(config.get("trajectory_history_size", 6)),
+            trajectory_prediction_horizon=int(
+                config.get("trajectory_prediction_horizon", 3)
+            ),
+            trajectory_smoothing=float(config.get("trajectory_smoothing", 0.65)),
             appearance_weight=float(config.get("appearance_weight", 0.35)),
             appearance_threshold=float(config.get("appearance_threshold", 0.2)),
             appearance_ambiguous_iou_margin=float(
@@ -589,6 +674,14 @@ def create_tracker(config: dict) -> Tracker:
         ),
         max_age_frames=common["max_age_frames"],
         min_hits=common["min_hits"],
+        trajectory_prediction_enabled=bool(
+            config.get("trajectory_prediction_enabled", True)
+        ),
+        trajectory_history_size=int(config.get("trajectory_history_size", 6)),
+        trajectory_prediction_horizon=int(
+            config.get("trajectory_prediction_horizon", 3)
+        ),
+        trajectory_smoothing=float(config.get("trajectory_smoothing", 0.65)),
     )
 
 
@@ -599,6 +692,45 @@ def _cosine_similarity(a: np.ndarray | None, b: np.ndarray | None) -> float:
     if denominator <= 0:
         return 0.0
     return max(0.0, float(np.dot(a, b) / denominator))
+
+
+def _solve_assignment(
+    track_ids: list[int],
+    detection_ids: list[int],
+    scores: dict[tuple[int, int], float],
+) -> list[tuple[int, int]]:
+    if not track_ids or not detection_ids or not scores:
+        return []
+
+    if linear_sum_assignment is None:
+        ranked = sorted(
+            ((score, track_id, det_idx) for (track_id, det_idx), score in scores.items()),
+            reverse=True,
+        )
+        matches: list[tuple[int, int]] = []
+        used_tracks: set[int] = set()
+        used_detections: set[int] = set()
+        for _, track_id, det_idx in ranked:
+            if track_id in used_tracks or det_idx in used_detections:
+                continue
+            matches.append((track_id, det_idx))
+            used_tracks.add(track_id)
+            used_detections.add(det_idx)
+        return matches
+
+    track_index = {track_id: idx for idx, track_id in enumerate(track_ids)}
+    detection_index = {det_idx: idx for idx, det_idx in enumerate(detection_ids)}
+    cost = np.full((len(track_ids), len(detection_ids)), 1e6, dtype=np.float32)
+    for (track_id, det_idx), score in scores.items():
+        cost[track_index[track_id], detection_index[det_idx]] = 1.0 - float(score)
+
+    rows, cols = linear_sum_assignment(cost)
+    matches: list[tuple[int, int]] = []
+    for row_idx, col_idx in zip(rows.tolist(), cols.tolist()):
+        if cost[row_idx, col_idx] >= 1e5:
+            continue
+        matches.append((track_ids[row_idx], detection_ids[col_idx]))
+    return matches
 
 
 def _iou(

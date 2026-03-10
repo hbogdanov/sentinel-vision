@@ -1,0 +1,675 @@
+{
+  "summary": {
+    "num_videos": 4,
+    "total_duration_seconds": 77.5,
+    "coverage": {
+      "scene_types": [
+        "aerial",
+        "street",
+        "traffic",
+        "urban"
+      ],
+      "challenge_tags": [
+        "crowd",
+        "moving_camera",
+        "multi_class_tracking",
+        "occlusion",
+        "tracking",
+        "vehicle"
+      ],
+      "subject_classes": [
+        "bicycle",
+        "bus",
+        "car",
+        "motorcycle",
+        "person",
+        "truck"
+      ]
+    },
+    "detection_by_class": {
+      "backpack": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 8,
+        "fn": 0
+      },
+      "car": {
+        "precision": 0.6345,
+        "recall": 0.1556,
+        "tp": 1047,
+        "fp": 603,
+        "fn": 5681
+      },
+      "handbag": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 37,
+        "fn": 0
+      },
+      "person": {
+        "precision": 0.914,
+        "recall": 0.3193,
+        "tp": 10687,
+        "fp": 1006,
+        "fn": 22785
+      },
+      "truck": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 182
+      }
+    },
+    "tracking": {
+      "mota": 0.2474,
+      "motp": 0.8196,
+      "idf1": 0.3685,
+      "precision": 0.8765,
+      "recall": 0.2906,
+      "id_precision": 0.7399,
+      "id_recall": 0.2453,
+      "id_switches": 89,
+      "matched_count": 11734,
+      "fp": 1654,
+      "fn": 28648,
+      "gt_count": 40382,
+      "pred_count": 13388,
+      "idtp": 9906,
+      "idfp": 3482,
+      "idfn": 30476
+    },
+    "events_by_type": {
+      "after_hours_occupancy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "false_alerts_per_minute": 27.871,
+        "mean_alert_latency_seconds": 0.0,
+        "mean_alert_timing_error_seconds": 0.0,
+        "tp": 0,
+        "fp": 36,
+        "fn": 0
+      },
+      "intrusion": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "false_alerts_per_minute": 31.7419,
+        "mean_alert_latency_seconds": 0.0,
+        "mean_alert_timing_error_seconds": 0.0,
+        "tp": 0,
+        "fp": 41,
+        "fn": 0
+      },
+      "line_crossing": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "false_alerts_per_minute": 5.4194,
+        "mean_alert_latency_seconds": 0.0,
+        "mean_alert_timing_error_seconds": 0.0,
+        "tp": 0,
+        "fp": 7,
+        "fn": 0
+      },
+      "wrong_way": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "false_alerts_per_minute": 6.1935,
+        "mean_alert_latency_seconds": 0.0,
+        "mean_alert_timing_error_seconds": 0.0,
+        "tp": 0,
+        "fp": 8,
+        "fn": 0
+      }
+    },
+    "events_overall": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "false_alerts_per_minute": 71.2258,
+      "mean_alert_latency_seconds": 0.0,
+      "mean_alert_timing_error_seconds": 0.0,
+      "tp": 0,
+      "fp": 92,
+      "fn": 0
+    },
+    "runtime_by_device": {
+      "cpu": {
+        "videos": 4,
+        "frames_processed": 2325,
+        "wall_clock_seconds": 121.3533,
+        "effective_fps": 19.1589,
+        "stage_average_ms": {
+          "detect": 47.2061,
+          "events": 1.2604,
+          "motion": 0.298,
+          "read": 1.9428,
+          "track": 0.6636
+        }
+      }
+    }
+  },
+  "videos": [
+    {
+      "video_id": "mot17_04",
+      "fps": 30.0,
+      "duration_seconds": 20.0,
+      "metadata": {
+        "scene_types": [
+          "street",
+          "urban"
+        ],
+        "challenge_tags": [
+          "crowd",
+          "occlusion",
+          "tracking"
+        ],
+        "subject_classes": [
+          "person"
+        ],
+        "notes": "MOT17-04-FRCNN clip, frames 151-750, resized to 960px width."
+      },
+      "runtime": {
+        "device": "cpu",
+        "frames_processed": 600,
+        "wall_clock_seconds": 30.9376,
+        "effective_fps": 19.3939,
+        "stage_total_seconds": {
+          "detect": 26.783623,
+          "events": 1.539745,
+          "motion": 0.166008,
+          "read": 1.173673,
+          "track": 0.771849
+        }
+      },
+      "detection": {
+        "counts_by_class": {
+          "car": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "tp": 0,
+            "fp": 598,
+            "fn": 0
+          },
+          "person": {
+            "precision": 0.9311,
+            "recall": 0.2784,
+            "tp": 6698,
+            "fp": 496,
+            "fn": 17358
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 24056,
+          "pred_count": 7792,
+          "matched_count": 6698,
+          "matched_iou_sum": 5510.086824163618,
+          "fp": 1094,
+          "fn": 17358,
+          "id_switches": 16,
+          "idtp": 5926,
+          "idfp": 1866,
+          "idfn": 18130
+        },
+        "metrics": {
+          "mota": 0.2323,
+          "motp": 0.8226,
+          "idf1": 0.3721,
+          "precision": 0.8596,
+          "recall": 0.2784,
+          "id_precision": 0.7605,
+          "id_recall": 0.2463,
+          "id_switches": 16,
+          "matched_count": 6698,
+          "fp": 1094,
+          "fn": 17358,
+          "gt_count": 24056,
+          "pred_count": 7792,
+          "idtp": 5926,
+          "idfp": 1866,
+          "idfn": 18130
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "after_hours_occupancy": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 24.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 8,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "intrusion": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 27.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 9,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "line_crossing": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 6.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 2,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "wrong_way": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 3.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 1,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          }
+        }
+      }
+    },
+    {
+      "video_id": "mot17_09",
+      "fps": 30.0,
+      "duration_seconds": 17.5,
+      "metadata": {
+        "scene_types": [
+          "street",
+          "urban"
+        ],
+        "challenge_tags": [
+          "crowd",
+          "occlusion",
+          "tracking"
+        ],
+        "subject_classes": [
+          "person"
+        ],
+        "notes": "MOT17-09-FRCNN clip, full 525-frame sequence, resized to 960px width."
+      },
+      "runtime": {
+        "device": "cpu",
+        "frames_processed": 525,
+        "wall_clock_seconds": 26.7069,
+        "effective_fps": 19.6578,
+        "stage_total_seconds": {
+          "detect": 24.030109,
+          "events": 0.794725,
+          "motion": 0.15579,
+          "read": 0.885318,
+          "track": 0.436272
+        }
+      },
+      "detection": {
+        "counts_by_class": {
+          "backpack": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "tp": 0,
+            "fp": 8,
+            "fn": 0
+          },
+          "handbag": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "tp": 0,
+            "fp": 37,
+            "fn": 0
+          },
+          "person": {
+            "precision": 0.8856,
+            "recall": 0.829,
+            "tp": 3205,
+            "fp": 414,
+            "fn": 661
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 3866,
+          "pred_count": 3664,
+          "matched_count": 3205,
+          "matched_iou_sum": 2624.4051073870705,
+          "fp": 459,
+          "fn": 661,
+          "id_switches": 66,
+          "idtp": 2236,
+          "idfp": 1428,
+          "idfn": 1630
+        },
+        "metrics": {
+          "mota": 0.6932,
+          "motp": 0.8188,
+          "idf1": 0.5939,
+          "precision": 0.8747,
+          "recall": 0.829,
+          "id_precision": 0.6103,
+          "id_recall": 0.5784,
+          "id_switches": 66,
+          "matched_count": 3205,
+          "fp": 459,
+          "fn": 661,
+          "gt_count": 3866,
+          "pred_count": 3664,
+          "idtp": 2236,
+          "idfp": 1428,
+          "idfn": 1630
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "after_hours_occupancy": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 68.5714,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 20,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "intrusion": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 75.4286,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 22,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "line_crossing": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 13.7143,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 4,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "wrong_way": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 10.2857,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 3,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          }
+        }
+      }
+    },
+    {
+      "video_id": "visdrone_uav0000099_02109",
+      "fps": 30.0,
+      "duration_seconds": 20.0,
+      "metadata": {
+        "scene_types": [
+          "aerial",
+          "traffic"
+        ],
+        "challenge_tags": [
+          "moving_camera",
+          "vehicle",
+          "multi_class_tracking"
+        ],
+        "subject_classes": [
+          "person",
+          "car",
+          "truck",
+          "bus",
+          "bicycle",
+          "motorcycle"
+        ],
+        "notes": "VisDrone train sequence uav0000099_02109_v, frames 151-750, resized to 960px width."
+      },
+      "runtime": {
+        "device": "cpu",
+        "frames_processed": 600,
+        "wall_clock_seconds": 30.7691,
+        "effective_fps": 19.5001,
+        "stage_total_seconds": {
+          "detect": 28.501638,
+          "events": 0.258776,
+          "motion": 0.181512,
+          "read": 1.194686,
+          "track": 0.150683
+        }
+      },
+      "detection": {
+        "counts_by_class": {
+          "person": {
+            "precision": 0.8909,
+            "recall": 0.1806,
+            "tp": 784,
+            "fp": 96,
+            "fn": 3558
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 4342,
+          "pred_count": 880,
+          "matched_count": 784,
+          "matched_iou_sum": 556.3180855228724,
+          "fp": 96,
+          "fn": 3558,
+          "id_switches": 7,
+          "idtp": 697,
+          "idfp": 183,
+          "idfn": 3645
+        },
+        "metrics": {
+          "mota": 0.1568,
+          "motp": 0.7096,
+          "idf1": 0.2669,
+          "precision": 0.8909,
+          "recall": 0.1806,
+          "id_precision": 0.792,
+          "id_recall": 0.1605,
+          "id_switches": 7,
+          "matched_count": 784,
+          "fp": 96,
+          "fn": 3558,
+          "gt_count": 4342,
+          "pred_count": 880,
+          "idtp": 697,
+          "idfp": 183,
+          "idfn": 3645
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "after_hours_occupancy": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 24.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 8,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "intrusion": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 24.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 8,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "wrong_way": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 12.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 4,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          }
+        }
+      }
+    },
+    {
+      "video_id": "visdrone_uav0000268_05773",
+      "fps": 30.0,
+      "duration_seconds": 20.0,
+      "metadata": {
+        "scene_types": [
+          "aerial",
+          "traffic"
+        ],
+        "challenge_tags": [
+          "moving_camera",
+          "vehicle",
+          "multi_class_tracking"
+        ],
+        "subject_classes": [
+          "person",
+          "car",
+          "truck",
+          "bus",
+          "bicycle",
+          "motorcycle"
+        ],
+        "notes": "VisDrone val sequence uav0000268_05773_v, frames 1-600, resized to 960px width."
+      },
+      "runtime": {
+        "device": "cpu",
+        "frames_processed": 600,
+        "wall_clock_seconds": 32.9398,
+        "effective_fps": 18.2151,
+        "stage_total_seconds": {
+          "detect": 30.438908,
+          "events": 0.337153,
+          "motion": 0.189503,
+          "read": 1.263262,
+          "track": 0.184126
+        }
+      },
+      "detection": {
+        "counts_by_class": {
+          "car": {
+            "precision": 0.9952,
+            "recall": 0.1556,
+            "tp": 1047,
+            "fp": 5,
+            "fn": 5681
+          },
+          "person": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "tp": 0,
+            "fp": 0,
+            "fn": 1208
+          },
+          "truck": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "tp": 0,
+            "fp": 0,
+            "fn": 182
+          }
+        }
+      },
+      "tracking": {
+        "counts": {
+          "gt_count": 8118,
+          "pred_count": 1052,
+          "matched_count": 1047,
+          "matched_iou_sum": 926.6263587523,
+          "fp": 5,
+          "fn": 7071,
+          "id_switches": 0,
+          "idtp": 1047,
+          "idfp": 5,
+          "idfn": 7071
+        },
+        "metrics": {
+          "mota": 0.1284,
+          "motp": 0.885,
+          "idf1": 0.2284,
+          "precision": 0.9952,
+          "recall": 0.129,
+          "id_precision": 0.9952,
+          "id_recall": 0.129,
+          "id_switches": 0,
+          "matched_count": 1047,
+          "fp": 5,
+          "fn": 7071,
+          "gt_count": 8118,
+          "pred_count": 1052,
+          "idtp": 1047,
+          "idfp": 5,
+          "idfn": 7071
+        }
+      },
+      "events": {
+        "counts_by_type": {
+          "intrusion": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 6.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 2,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          },
+          "line_crossing": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "false_alerts_per_minute": 3.0,
+            "mean_alert_latency_seconds": 0.0,
+            "mean_alert_timing_error_seconds": 0.0,
+            "tp": 0,
+            "fp": 1,
+            "fn": 0,
+            "latencies": [],
+            "latency_errors": []
+          }
+        }
+      }
+    }
+  ]
+}

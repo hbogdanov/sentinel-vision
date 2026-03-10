@@ -1,7 +1,8 @@
 import numpy as np
 
+from src.inference.appearance import HistogramAppearanceEmbedder, build_appearance_embedder
 from src.inference.detector import Detection
-from src.inference.tracker import BoTSORTTracker, ByteTracker
+from src.inference.tracker import BoTSORTTracker, ByteTracker, _solve_assignment
 
 
 class _StaticEmbedder:
@@ -193,3 +194,58 @@ def test_bytetrack_uses_global_motion_compensation_for_camera_shift() -> None:
     assert [track.track_id for track in first] == [1]
     assert [track.track_id for track in second] == [1]
     assert second[0].bbox == (30, 20, 50, 60)
+
+
+def test_bytetrack_exposes_predicted_trajectory_from_smoothed_motion() -> None:
+    tracker = ByteTracker(
+        high_score_threshold=0.5,
+        low_score_threshold=0.1,
+        new_track_score_threshold=0.5,
+        match_iou_threshold=0.2,
+        secondary_match_iou_threshold=0.1,
+        max_age_frames=3,
+        min_hits=1,
+        trajectory_prediction_enabled=True,
+        trajectory_history_size=4,
+        trajectory_prediction_horizon=3,
+        trajectory_smoothing=0.7,
+    )
+
+    tracker.update(
+        [Detection(bbox=(0, 0, 10, 10), score=0.95, class_id=0, label="person")],
+        frame_index=0,
+    )
+    tracks = tracker.update(
+        [Detection(bbox=(4, 0, 14, 10), score=0.95, class_id=0, label="person")],
+        frame_index=1,
+    )
+
+    assert len(tracks) == 1
+    assert len(tracks[0].predicted_path) == 3
+    assert tracks[0].predicted_path[0][0] > tracks[0].center[0]
+    assert tracks[0].velocity[0] > 0
+
+
+def test_assignment_solver_prefers_global_optimum_over_greedy_pick() -> None:
+    matches = _solve_assignment(
+        track_ids=[1, 2],
+        detection_ids=[10, 11],
+        scores={
+            (1, 10): 0.95,
+            (1, 11): 0.94,
+            (2, 10): 0.93,
+        },
+    )
+
+    assert sorted(matches) == [(1, 11), (2, 10)]
+
+
+def test_build_appearance_embedder_falls_back_to_histogram(monkeypatch) -> None:
+    def _raise(*args, **kwargs):
+        raise RuntimeError("no pretrained weights")
+
+    monkeypatch.setattr("src.inference.appearance.TorchvisionReIDEmbedder", _raise)
+
+    embedder = build_appearance_embedder({"appearance_model": "mobilenet_v3_small"})
+
+    assert isinstance(embedder, HistogramAppearanceEmbedder)

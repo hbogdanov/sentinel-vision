@@ -109,11 +109,9 @@ class TorchvisionReIDEmbedder:
                     weights = models.MobileNet_V3_Small_Weights.DEFAULT
                     model = models.mobilenet_v3_small(weights=weights)
                 except Exception as exc:
-                    LOGGER.warning(
-                        "Falling back from pretrained MobileNetV3 appearance encoder: %s",
-                        exc,
-                    )
-                    model = models.mobilenet_v3_small(weights=None)
+                    raise RuntimeError(
+                        "Could not initialize pretrained MobileNetV3 appearance encoder."
+                    ) from exc
             else:
                 model = models.mobilenet_v3_small(weights=None)
 

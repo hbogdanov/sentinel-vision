@@ -22,6 +22,7 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 - YOLO-backed object detection via Ultralytics
 - ByteTrack-based multi-object tracking for stronger ID continuity
 - Optional BoT-SORT-style tracking with lightweight learned re-ID embeddings for harder crossings, occlusion recovery, and lower ID-switch rates
+- Configurable trajectory prediction that smooths recent motion for short-occlusion association and renders forecast paths on annotated video
 - Optional feature-based camera motion compensation with affine or homography estimation
 - Optional image-to-ground-plane homography for normalized zone reasoning and occupancy estimates
 - Polygon and line zone definitions with tags and metadata
@@ -48,13 +49,19 @@ Demo assets that are committed to the repo live in `data/eval/videos/`. There is
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 For linting, tests, and local CI-style checks:
 
 ```bash
-pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+Run repo commands with the project virtual environment to avoid Windows PATH conflicts between system Python, Conda, and `.venv`:
+
+```bash
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
 ## Run
@@ -148,8 +155,11 @@ The default YAML config is at [configs/default.yaml](configs/default.yaml).
 - Motion compensation can be toggled per camera with `runtime.motion_compensation`, including a `static_camera_assumption` switch and `affine`/`homography` modes
 - Deployment profiles under `configs/profiles/` can tune runtime/model/output settings for edge CPU, edge GPU, or low-latency use cases
 - `configs/profiles/crowded_tracking.yaml` switches tracking to BoT-SORT with a lightweight MobileNetV3 appearance encoder for harder multi-object tracking cases
+- `configs/profiles/benchmark_association_tuned.yaml` applies stricter ByteTrack association and threshold tuning for the checked-in MOT17/VisDrone public benchmark subset
 - `--device` and `--model` CLI flags override inference backend and model selection without editing YAML
 - Multi-camera configs can define a top-level `cameras` list; each camera gets its own event log, health file, annotated output, and alert clip directory automatically
+- `tracking.trajectory_*` tunes the tracker-side motion predictor used for short-gap association and predicted path overlays
+- `output.zone_heatmap` can render and persist a zone occupancy heatmap PNG plus JSON summary for demos and traffic-pattern analysis
 - The API and dashboard use a persistent SQLite DB at `data/outputs/alerts.db` by default
 - Supported detector classes now include `backpack`, `handbag`, and `suitcase` for unattended-object workflows
 
@@ -249,6 +259,15 @@ Current public-dataset CPU baseline:
 - ID switches `89`
 - Effective CPU runtime `19.869 FPS`
 
+Checked-in tuned public-dataset profile:
+
+- Profile: `benchmark_association_tuned`
+- Result artifact: [public_dataset_benchmark_association_tuned.json](data/eval/results/public_dataset_benchmark_association_tuned.json)
+- MOTA `0.247`
+- IDF1 `0.369`
+- ID switches `89`
+- Effective CPU runtime `19.159 FPS`
+
 The checked-in VisDrone clip `visdrone_uav0000268_05773_clip.mp4` was re-encoded with H.264 to keep the repo lighter. If you re-encode benchmark videos, rerun `python -m scripts.run_benchmark` and regenerate the reports so predictions and published metrics stay aligned.
 The repeatable compression workflow is documented in `data/eval/README.md` and implemented by `python -m scripts.compress_benchmark_videos`.
 
@@ -269,14 +288,14 @@ Health status includes:
 ## Testing
 
 ```bash
-python -m pytest -q
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
 Local lint and format checks:
 
 ```bash
-ruff check src tests scripts
-black --check src tests scripts
+.\.venv\Scripts\python.exe -m ruff check src tests scripts
+.\.venv\Scripts\python.exe -m black --check src tests scripts
 ```
 
 ## CI
@@ -304,5 +323,5 @@ Deployment notes for Docker, Compose profiles, CPU/GPU selection, config profile
 
 ## Roadmap
 
-- Expand the benchmark asset pack toward MOT17, VIRAT, or VisDrone-backed evaluation clips
 - Add stronger learned re-identification for BoT-SORT-style tracking
+- Expand the checked-in benchmark beyond the current MOT17 and VisDrone subset with more labeled clips, harder occlusions, and richer event-ground-truth coverage
