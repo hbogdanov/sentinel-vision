@@ -21,14 +21,6 @@ Sentinel Vision is a real-time safety analytics pipeline for webcam feeds, video
 
 Current checked-in public-dataset results are a CPU baseline stress test used to guide tracker and event-logic tuning, not a final tuned deployment profile.
 
-## Demo
-
-![Sentinel Vision Demo Montage](demo/screenshots/demo_montage.gif)
-
-| Annotated frame | Benchmark snapshot |
-| --- | --- |
-| ![Annotated Sentinel Vision frame](demo/screenshots/annotated_demo_frame.jpg) | ![Public benchmark snapshot](demo/screenshots/public_benchmark_snapshot.jpg) |
-
 ## Architecture
 
 ![Architecture Diagram](docs/architecture.svg)
@@ -61,12 +53,17 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 - Docker packaging for API, dashboard, and pipeline services
 - Camera health status snapshots with reconnect/degradation tracking
 
+## Demo
+
+- Demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
+- Benchmark/evaluation assets: [data/eval/README.md](data/eval/README.md)
+- Public benchmark report: [results_public_dataset_benchmark_association_tuned.md](docs/results_public_dataset_benchmark_association_tuned.md)
+
 - Checked-in demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
 - Additional checked-in benchmark clips live under [data/eval/videos](data/eval/videos)
 - Evaluation bundle and reference clips: [data/eval/README.md](data/eval/README.md)
-- Generated README visuals live under [demo/screenshots](demo/screenshots)
 
-Demo assets that are committed to the repo live in `data/eval/videos/` and `demo/screenshots/`.
+Demo assets that are committed to the repo live in `data/eval/videos/`.
 
 ## Setup
 
