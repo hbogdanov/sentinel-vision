@@ -18,6 +18,7 @@ def test_load_config_merges_defaults(tmp_path: Path) -> None:
     assert config["model"]["confidence"] == 0.5
     assert config["tracking"]["type"] == "bytetrack"
     assert config["tracking"]["max_age_frames"] == 30
+    assert config["tracking"]["appearance_model"] == "mobilenet_v3_small"
     assert config["events"]["line_crossing"]["enabled"] is True
     assert config["events"]["after_hours_occupancy"]["timezone"] == "America/New_York"
 
@@ -48,6 +49,17 @@ def test_load_config_rejects_invalid_dashboard_url(tmp_path: Path) -> None:
     config_path = tmp_path / "config.yaml"
     config_path.write_text(
         "camera_id: cam_2\nzones: []\ndashboard:\n  enabled: true\n  endpoint: not-a-url\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationError):
+        load_config(str(config_path))
+
+
+def test_load_config_rejects_invalid_appearance_model(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "camera_id: cam_2\nzones: []\ntracking:\n  appearance_model: osnet\n",
         encoding="utf-8",
     )
 

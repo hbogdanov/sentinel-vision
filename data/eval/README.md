@@ -123,6 +123,14 @@ python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest_public_d
 python -m scripts.render_metrics_report --input-json data/eval/results/public_dataset_cpu.json --output-html docs/results_public_dataset_cpu.html
 ```
 
+For quick local iteration on large clips, the runner also supports:
+
+```bash
+python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest_public_datasets.json --config configs/default.yaml --profile edge_cpu --device cpu --frame-skip 2 --max-frames 200 --output-json data/eval/results/quickcheck.json --output-markdown docs/results_quickcheck.md
+```
+
+`--frame-skip` processes every `N+1`th frame. `--max-frames` caps processed frames per video. Use these for smoke tests, not for the benchmark-of-record.
+
 To shrink checked-in benchmark videos before rerunning inference:
 
 ```bash

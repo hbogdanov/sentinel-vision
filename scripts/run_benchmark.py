@@ -60,6 +60,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.5,
         help="IoU threshold used during evaluation.",
     )
+    parser.add_argument(
+        "--frame-skip",
+        type=int,
+        default=0,
+        help="Process every N+1th frame for faster ad hoc benchmark runs.",
+    )
+    parser.add_argument(
+        "--max-frames",
+        type=int,
+        default=0,
+        help="Stop after processing this many frames per video. 0 means no limit.",
+    )
     return parser
 
 
@@ -80,6 +92,8 @@ def main() -> None:
             default_profile=args.profile,
             device=args.device,
             model_path=args.model,
+            frame_skip=args.frame_skip,
+            max_frames=args.max_frames,
         )
         prediction_path.write_text(json.dumps(generated, indent=2), encoding="utf-8")
         video_spec["predictions"] = str(prediction_path.relative_to(base_dir)).replace(
@@ -114,7 +128,14 @@ def run_video_benchmark(
     default_profile: str | None,
     device: str | None,
     model_path: str | None,
+    frame_skip: int = 0,
+    max_frames: int = 0,
 ) -> dict[str, Any]:
+    if frame_skip < 0:
+        raise ValueError("frame_skip must be >= 0.")
+    if max_frames < 0:
+        raise ValueError("max_frames must be >= 0.")
+
     pipeline = _build_pipeline(
         video_spec=video_spec,
         base_dir=base_dir,
@@ -141,6 +162,13 @@ def run_video_benchmark(
             ok, frame = capture.read()
             stage_total_seconds["read"] += time.perf_counter() - read_started
             if not ok:
+                break
+
+            if frame_skip > 0 and frame_index % (frame_skip + 1) != 0:
+                frame_index += 1
+                continue
+
+            if max_frames > 0 and frames_processed >= max_frames:
                 break
 
             frames_processed += 1

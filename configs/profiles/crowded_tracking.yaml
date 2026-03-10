@@ -1,0 +1,12 @@
+tracking:
+  type: botsort
+  match_iou_threshold: 0.25
+  secondary_match_iou_threshold: 0.1
+  appearance_weight: 0.6
+  appearance_threshold: 0.35
+  appearance_ambiguous_iou_margin: 0.12
+  appearance_model: mobilenet_v3_small
+  appearance_pretrained: true
+  appearance_weights_path: ""
+  appearance_device: cpu
+  appearance_input_size: 128

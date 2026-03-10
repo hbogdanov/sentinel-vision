@@ -27,6 +27,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "min_hits": 2,
         "appearance_weight": 0.35,
         "appearance_threshold": 0.2,
+        "appearance_ambiguous_iou_margin": 0.1,
+        "appearance_model": "mobilenet_v3_small",
+        "appearance_pretrained": True,
+        "appearance_weights_path": "",
+        "appearance_device": "cpu",
+        "appearance_input_size": 128,
     },
     "events": {
         "intrusion": {"enabled": True, "cooldown_seconds": 5},

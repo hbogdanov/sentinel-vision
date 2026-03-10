@@ -4,6 +4,21 @@ from src.inference.detector import Detection
 from src.inference.tracker import BoTSORTTracker, ByteTracker
 
 
+class _StaticEmbedder:
+    def __init__(self, embeddings_by_call):
+        self.embeddings_by_call = embeddings_by_call
+        self.calls = 0
+
+    def embed(self, frame, detections):
+        if not detections:
+            return {}
+        payload = self.embeddings_by_call[self.calls]
+        self.calls += 1
+        return {
+            idx: np.asarray(vector, dtype=np.float32) for idx, vector in payload.items()
+        }
+
+
 def test_bytetrack_recovers_same_id_after_short_missed_detection() -> None:
     tracker = ByteTracker(
         high_score_threshold=0.5,
@@ -41,6 +56,19 @@ def test_botsort_uses_appearance_to_avoid_identity_swap() -> None:
         min_hits=1,
         appearance_weight=0.8,
         appearance_threshold=0.1,
+        appearance_ambiguous_iou_margin=0.8,
+        appearance_embedder=_StaticEmbedder(
+            [
+                {
+                    0: np.array([1.0, 0.0], dtype=np.float32),
+                    1: np.array([0.0, 1.0], dtype=np.float32),
+                },
+                {
+                    0: np.array([0.0, 1.0], dtype=np.float32),
+                    1: np.array([1.0, 0.0], dtype=np.float32),
+                },
+            ]
+        ),
     )
 
     frame0 = np.zeros((12, 32, 3), dtype=np.uint8)
@@ -55,8 +83,8 @@ def test_botsort_uses_appearance_to_avoid_identity_swap() -> None:
     frame1[:, 0:10] = (255, 0, 0)
     frame1[:, 20:30] = (0, 0, 255)
     detections1 = [
-        Detection(bbox=(20, 0, 30, 10), score=0.93, class_id=0, label="person"),
-        Detection(bbox=(0, 0, 10, 10), score=0.94, class_id=0, label="person"),
+        Detection(bbox=(8, 0, 18, 10), score=0.93, class_id=0, label="person"),
+        Detection(bbox=(12, 0, 22, 10), score=0.94, class_id=0, label="person"),
     ]
 
     first = tracker.update(detections0, frame_index=0, frame=frame0)
@@ -64,9 +92,45 @@ def test_botsort_uses_appearance_to_avoid_identity_swap() -> None:
 
     assert [track.track_id for track in first] == [1, 2]
     assert second[0].track_id == 1
-    assert second[0].bbox == (20, 0, 30, 10)
+    assert second[0].bbox == (12, 0, 22, 10)
     assert second[1].track_id == 2
-    assert second[1].bbox == (0, 0, 10, 10)
+    assert second[1].bbox == (8, 0, 18, 10)
+
+
+def test_botsort_relinks_track_with_low_iou_when_embedding_matches() -> None:
+    tracker = BoTSORTTracker(
+        high_score_threshold=0.5,
+        low_score_threshold=0.1,
+        new_track_score_threshold=0.5,
+        match_iou_threshold=0.3,
+        secondary_match_iou_threshold=0.1,
+        max_age_frames=3,
+        min_hits=1,
+        appearance_weight=0.85,
+        appearance_threshold=0.7,
+        appearance_ambiguous_iou_margin=0.15,
+        appearance_embedder=_StaticEmbedder(
+            [
+                {0: np.array([1.0, 0.0], dtype=np.float32)},
+                {0: np.array([1.0, 0.0], dtype=np.float32)},
+            ]
+        ),
+    )
+
+    first = tracker.update(
+        [Detection(bbox=(0, 0, 10, 10), score=0.95, class_id=0, label="person")],
+        frame_index=0,
+        frame=np.zeros((20, 20, 3), dtype=np.uint8),
+    )
+    tracker.update([], frame_index=1, frame=np.zeros((20, 20, 3), dtype=np.uint8))
+    relinked = tracker.update(
+        [Detection(bbox=(8, 0, 18, 10), score=0.94, class_id=0, label="person")],
+        frame_index=2,
+        frame=np.zeros((20, 20, 3), dtype=np.uint8),
+    )
+
+    assert [track.track_id for track in first] == [1]
+    assert [track.track_id for track in relinked] == [1]
 
 
 def test_bytetrack_keeps_consistent_ids_for_two_tracks_across_multiple_frames() -> None:

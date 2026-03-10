@@ -57,6 +57,12 @@ class TrackingConfig(BaseModel):
     min_hits: int = 2
     appearance_weight: float = 0.35
     appearance_threshold: float = 0.2
+    appearance_ambiguous_iou_margin: float = 0.1
+    appearance_model: Literal["histogram", "mobilenet_v3_small"] = "mobilenet_v3_small"
+    appearance_pretrained: bool = True
+    appearance_weights_path: str = ""
+    appearance_device: str = "cpu"
+    appearance_input_size: int = 128
 
     @field_validator(
         "high_score_threshold",
@@ -66,6 +72,7 @@ class TrackingConfig(BaseModel):
         "secondary_match_iou_threshold",
         "appearance_weight",
         "appearance_threshold",
+        "appearance_ambiguous_iou_margin",
     )
     @classmethod
     def validate_unit_interval(cls, value: float) -> float:
@@ -73,13 +80,11 @@ class TrackingConfig(BaseModel):
             raise ValueError("tracking thresholds must be in the range [0, 1].")
         return value
 
-    @field_validator("max_age_frames", "min_hits")
+    @field_validator("max_age_frames", "min_hits", "appearance_input_size")
     @classmethod
     def validate_positive_int(cls, value: int) -> int:
         if value < 1:
-            raise ValueError(
-                "tracking.max_age_frames and tracking.min_hits must be >= 1."
-            )
+            raise ValueError("tracking positive integer settings must be >= 1.")
         return value
 
     @model_validator(mode="after")

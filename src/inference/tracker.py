@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol
 
-import cv2
 import numpy as np
 
+from src.inference.appearance import AppearanceEmbedder, build_appearance_embedder
 from src.inference.detector import Detection
 from src.inference.motion import compensate_bbox
 
@@ -376,6 +376,8 @@ class BoTSORTTracker(ByteTracker):
         min_hits: int = 2,
         appearance_weight: float = 0.35,
         appearance_threshold: float = 0.2,
+        appearance_ambiguous_iou_margin: float = 0.1,
+        appearance_embedder: AppearanceEmbedder | None = None,
     ) -> None:
         super().__init__(
             high_score_threshold=high_score_threshold,
@@ -388,6 +390,8 @@ class BoTSORTTracker(ByteTracker):
         )
         self.appearance_weight = appearance_weight
         self.appearance_threshold = appearance_threshold
+        self.appearance_ambiguous_iou_margin = appearance_ambiguous_iou_margin
+        self.appearance_embedder = appearance_embedder
 
     def update(
         self,
@@ -396,7 +400,11 @@ class BoTSORTTracker(ByteTracker):
         frame=None,
         motion_transform=None,
     ) -> list[Track]:
-        embeddings = self._compute_embeddings(frame, detections)
+        embeddings = (
+            self.appearance_embedder.embed(frame, detections)
+            if self.appearance_embedder is not None
+            else {}
+        )
         compensated_boxes = [
             compensate_bbox(detection.bbox, motion_transform)
             for detection in detections
@@ -512,9 +520,11 @@ class BoTSORTTracker(ByteTracker):
                 )
                 if iou < threshold and appearance_score < self.appearance_threshold:
                     continue
-                score = (
-                    1.0 - self.appearance_weight
-                ) * iou + self.appearance_weight * appearance_score
+                score = iou
+                if iou < threshold + self.appearance_ambiguous_iou_margin:
+                    score = (
+                        1.0 - self.appearance_weight
+                    ) * iou + self.appearance_weight * appearance_score
                 candidates.append((score, track_id, det_idx))
 
         candidates.sort(reverse=True)
@@ -530,35 +540,6 @@ class BoTSORTTracker(ByteTracker):
             unmatched_detection_ids.discard(det_idx)
 
         return matches, unmatched_track_ids, unmatched_detection_ids
-
-    def _compute_embeddings(
-        self, frame, detections: list[Detection]
-    ) -> dict[int, np.ndarray]:
-        if frame is None:
-            return {}
-
-        embeddings: dict[int, np.ndarray] = {}
-        height, width = frame.shape[:2]
-        for det_idx, detection in enumerate(detections):
-            x1, y1, x2, y2 = detection.bbox
-            ix1 = max(0, min(width - 1, int(x1)))
-            iy1 = max(0, min(height - 1, int(y1)))
-            ix2 = max(ix1 + 1, min(width, int(x2)))
-            iy2 = max(iy1 + 1, min(height, int(y2)))
-            crop = frame[iy1:iy2, ix1:ix2]
-            if crop.size == 0:
-                continue
-            hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-            hist = (
-                cv2.calcHist([hsv], [0, 1], None, [8, 8], [0, 180, 0, 256])
-                .flatten()
-                .astype(np.float32)
-            )
-            norm = np.linalg.norm(hist)
-            if norm > 0:
-                hist /= norm
-            embeddings[det_idx] = hist
-        return embeddings
 
 
 def create_tracker(config: dict) -> Tracker:
@@ -592,6 +573,10 @@ def create_tracker(config: dict) -> Tracker:
             min_hits=common["min_hits"],
             appearance_weight=float(config.get("appearance_weight", 0.35)),
             appearance_threshold=float(config.get("appearance_threshold", 0.2)),
+            appearance_ambiguous_iou_margin=float(
+                config.get("appearance_ambiguous_iou_margin", 0.1)
+            ),
+            appearance_embedder=build_appearance_embedder(config),
         )
 
     return ByteTracker(

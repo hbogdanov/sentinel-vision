@@ -6,7 +6,7 @@ Sentinel Vision is a real-time safety analytics pipeline for webcam feeds, video
 
 - Input: webcam, local video file, or RTSP stream
 - Detection: YOLO-based people and vehicle detection
-- Tracking: ByteTrack by default, with an appearance-aware BoT-SORT-style option
+- Tracking: ByteTrack by default, with an optional BoT-SORT-style learned re-ID path for harder occlusion cases
 - Event logic: intrusion, loitering, line crossing, wrong-way, after-hours occupancy, vehicle zone violations, abandoned-object detection
 - Output: annotated video, snapshots, pre/post alert clips, JSON events, SQLite alert history
 - Backend: FastAPI alert API plus Streamlit dashboard
@@ -21,7 +21,7 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 
 - YOLO-backed object detection via Ultralytics
 - ByteTrack-based multi-object tracking for stronger ID continuity
-- Optional appearance-aware BoT-SORT-style tracking for harder crossings and re-identification
+- Optional BoT-SORT-style tracking with lightweight learned re-ID embeddings for harder crossings, occlusion recovery, and lower ID-switch rates
 - Optional feature-based camera motion compensation with affine or homography estimation
 - Optional image-to-ground-plane homography for normalized zone reasoning and occupancy estimates
 - Polygon and line zone definitions with tags and metadata
@@ -107,6 +107,12 @@ Use a deployment profile and explicit device/model overrides:
 python -m src.main --config configs/default.yaml --profile edge_cpu --device cpu --model yolo11n.pt
 ```
 
+Use the learned-embedding tracking profile for crowded or occlusion-heavy scenes:
+
+```bash
+python -m src.main --config configs/default.yaml --profile crowded_tracking --source data/eval/videos/mot17_04_clip.mp4
+```
+
 ## Example Alert
 
 ```json
@@ -141,6 +147,7 @@ The default YAML config is at [configs/default.yaml](configs/default.yaml).
 - Runtime controls include RTSP reconnect attempts, frame skip policy, inference resize, and per-stage timing logs
 - Motion compensation can be toggled per camera with `runtime.motion_compensation`, including a `static_camera_assumption` switch and `affine`/`homography` modes
 - Deployment profiles under `configs/profiles/` can tune runtime/model/output settings for edge CPU, edge GPU, or low-latency use cases
+- `configs/profiles/crowded_tracking.yaml` switches tracking to BoT-SORT with a lightweight MobileNetV3 appearance encoder for harder multi-object tracking cases
 - `--device` and `--model` CLI flags override inference backend and model selection without editing YAML
 - Multi-camera configs can define a top-level `cameras` list; each camera gets its own event log, health file, annotated output, and alert clip directory automatically
 - The API and dashboard use a persistent SQLite DB at `data/outputs/alerts.db` by default
@@ -168,6 +175,14 @@ Generate predictions and score the benchmark in one pass:
 ```bash
 python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cpu --output-json data/eval/results/latest.json --output-markdown docs/results.md
 ```
+
+For quicker local smoke runs on larger clips, you can subsample the benchmark:
+
+```bash
+python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest_public_datasets.json --config configs/default.yaml --profile edge_cpu --device cpu --frame-skip 2 --max-frames 200 --output-json data/eval/results/quickcheck.json --output-markdown docs/results_quickcheck.md
+```
+
+Use `--frame-skip` and `--max-frames` for iteration speed only. Full benchmark numbers in the README and reports should come from unskipped runs.
 
 Or score an existing set of prediction JSON files:
 
@@ -225,6 +240,7 @@ Tracking baseline context:
 - These public-dataset numbers come from the `edge_cpu` profile on CPU with `yolo11n.pt` and the repo's default ByteTrack-style tracker.
 - The subset mixes crowded MOT17 street scenes with moving-camera VisDrone aerial scenes and does not use dataset-specific detector or tracker tuning.
 - Read the public-dataset results as a baseline stress test, not as a tuned SOTA tracking claim.
+- For harder occlusion cases, switch to `--profile crowded_tracking` to enable the learned-embedding BoT-SORT path. That mode is intended to improve IDF1 and reduce ID switches rather than maximize raw throughput.
 
 Current public-dataset CPU baseline:
 

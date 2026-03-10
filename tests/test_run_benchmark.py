@@ -188,3 +188,96 @@ zones: []
     assert payload["events"][0]["event_type"] == "intrusion"
     assert payload["runtime"]["device"] == "cpu"
     assert payload["runtime"]["frames_processed"] == 3
+
+
+def test_run_video_benchmark_supports_frame_skip(monkeypatch, tmp_path: Path) -> None:
+    module = _load_module()
+    monkeypatch.setattr(module, "SentinelPipeline", _FakePipeline)
+    monkeypatch.setattr(module, "open_video_source", lambda source: _FakeVideoSource())
+
+    video_spec = {
+        "video_id": "synthetic_clip",
+        "video_path": "videos/synthetic_clip.mp4",
+        "ground_truth": "annotations/synthetic_clip.json",
+        "predictions": "predictions/synthetic_clip.json",
+        "fps": 5.0,
+        "duration_seconds": 0.6,
+    }
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+camera_id: benchmark_cam
+model:
+  path: fake.pt
+  confidence: 0.25
+  device: cpu
+  classes: [person]
+tracking:
+  type: bytetrack
+events:
+  intrusion:
+    enabled: true
+zones: []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    payload = module.run_video_benchmark(
+        video_spec=video_spec,
+        base_dir=tmp_path,
+        default_config_path=config_path,
+        default_profile=None,
+        device="cpu",
+        model_path=None,
+        frame_skip=1,
+    )
+
+    assert payload["runtime"]["frames_processed"] == 2
+    assert [item["frame_index"] for item in payload["detections"]] == [0, 2]
+
+
+def test_run_video_benchmark_supports_max_frames(monkeypatch, tmp_path: Path) -> None:
+    module = _load_module()
+    monkeypatch.setattr(module, "SentinelPipeline", _FakePipeline)
+    monkeypatch.setattr(module, "open_video_source", lambda source: _FakeVideoSource())
+
+    video_spec = {
+        "video_id": "synthetic_clip",
+        "video_path": "videos/synthetic_clip.mp4",
+        "ground_truth": "annotations/synthetic_clip.json",
+        "predictions": "predictions/synthetic_clip.json",
+        "fps": 5.0,
+        "duration_seconds": 0.6,
+    }
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        """
+camera_id: benchmark_cam
+model:
+  path: fake.pt
+  confidence: 0.25
+  device: cpu
+  classes: [person]
+tracking:
+  type: bytetrack
+events:
+  intrusion:
+    enabled: true
+zones: []
+""".strip(),
+        encoding="utf-8",
+    )
+
+    payload = module.run_video_benchmark(
+        video_spec=video_spec,
+        base_dir=tmp_path,
+        default_config_path=config_path,
+        default_profile=None,
+        device="cpu",
+        model_path=None,
+        max_frames=1,
+    )
+
+    assert payload["runtime"]["frames_processed"] == 1
+    assert len(payload["detections"]) == 1
+    assert payload["events"] == []
