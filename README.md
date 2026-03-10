@@ -220,6 +220,22 @@ Important distinction:
 - Tracking metrics on this subset are real dataset-derived results.
 - Event metrics are currently false-alert-only stress numbers because MOT17 and VisDrone do not ship event-level ground truth for this repo's rule-based events.
 
+Tracking baseline context:
+
+- These public-dataset numbers come from the `edge_cpu` profile on CPU with `yolo11n.pt` and the repo's default ByteTrack-style tracker.
+- The subset mixes crowded MOT17 street scenes with moving-camera VisDrone aerial scenes and does not use dataset-specific detector or tracker tuning.
+- Read the public-dataset results as a baseline stress test, not as a tuned SOTA tracking claim.
+
+Current public-dataset CPU baseline:
+
+- MOTA `0.228`
+- IDF1 `0.347`
+- ID switches `89`
+- Effective CPU runtime `19.869 FPS`
+
+The checked-in VisDrone clip `visdrone_uav0000268_05773_clip.mp4` was re-encoded with H.264 to keep the repo lighter. If you re-encode benchmark videos, rerun `python -m scripts.run_benchmark` and regenerate the reports so predictions and published metrics stay aligned.
+The repeatable compression workflow is documented in `data/eval/README.md` and implemented by `python -m scripts.compress_benchmark_videos`.
+
 Original datasets are not included in Git. Raw extractions live under `data/external/`, which is ignored by the repo.
 
 ## Camera Health

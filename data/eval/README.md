@@ -123,6 +123,22 @@ python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest_public_d
 python -m scripts.render_metrics_report --input-json data/eval/results/public_dataset_cpu.json --output-html docs/results_public_dataset_cpu.html
 ```
 
+To shrink checked-in benchmark videos before rerunning inference:
+
+```bash
+python -m scripts.compress_benchmark_videos --input-dir data/eval/videos --output-dir data/eval/videos_compressed --crf 28 --preset slow --max-width 960
+```
+
+On Windows shells where `ffmpeg` is installed but not exposed on `PATH`, pass `--ffmpeg-bin <path-to-ffmpeg.exe>`.
+
+If you re-encode any checked-in benchmark clip, rerun the benchmark and refresh the reports before committing so the prediction JSON files still match the shipped videos.
+
+Expected interpretation of the current checked-in public-dataset result:
+
+- It is a lightweight CPU baseline using the `edge_cpu` profile.
+- It is not tuned specifically for MOT17 or VisDrone.
+- It mixes crowded street tracking and moving-camera aerial tracking, so weak raw MOTA/IDF1 should be read as baseline stress numbers, not final system quality.
+
 ## Manifest explanation
 
 `benchmark_manifest.json` is the single source of truth for what the benchmark means.

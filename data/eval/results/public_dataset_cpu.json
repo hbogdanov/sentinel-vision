@@ -28,11 +28,11 @@
     },
     "detection_by_class": {
       "car": {
-        "precision": 0.5989,
-        "recall": 0.1341,
-        "tp": 902,
-        "fp": 604,
-        "fn": 5826
+        "precision": 0.6255,
+        "recall": 0.1497,
+        "tp": 1007,
+        "fp": 603,
+        "fn": 5721
       },
       "handbag": {
         "precision": 0.0,
@@ -57,22 +57,22 @@
       }
     },
     "tracking": {
-      "mota": 0.225,
-      "motp": 0.8195,
-      "idf1": 0.3435,
-      "precision": 0.87,
-      "recall": 0.2671,
-      "id_precision": 0.731,
-      "id_recall": 0.2245,
-      "id_switches": 91,
-      "matched_count": 10788,
-      "fp": 1612,
-      "fn": 29594,
+      "mota": 0.2277,
+      "motp": 0.8211,
+      "idf1": 0.3472,
+      "precision": 0.8712,
+      "recall": 0.2697,
+      "id_precision": 0.7342,
+      "id_recall": 0.2274,
+      "id_switches": 89,
+      "matched_count": 10893,
+      "fp": 1611,
+      "fn": 29489,
       "gt_count": 40382,
-      "pred_count": 12400,
-      "idtp": 9065,
-      "idfp": 3335,
-      "idfn": 31317
+      "pred_count": 12504,
+      "idtp": 9181,
+      "idfp": 3323,
+      "idfn": 31201
     },
     "events_by_type": {
       "after_hours_occupancy": {
@@ -98,11 +98,11 @@
       "line_crossing": {
         "precision": 0.0,
         "recall": 0.0,
-        "false_alerts_per_minute": 6.1935,
+        "false_alerts_per_minute": 5.4194,
         "mean_alert_latency_seconds": 0.0,
         "mean_alert_timing_error_seconds": 0.0,
         "tp": 0,
-        "fp": 8,
+        "fp": 7,
         "fn": 0
       },
       "wrong_way": {
@@ -119,25 +119,25 @@
     "events_overall": {
       "precision": 0.0,
       "recall": 0.0,
-      "false_alerts_per_minute": 71.2258,
+      "false_alerts_per_minute": 70.4516,
       "mean_alert_latency_seconds": 0.0,
       "mean_alert_timing_error_seconds": 0.0,
       "tp": 0,
-      "fp": 92,
+      "fp": 91,
       "fn": 0
     },
     "runtime_by_device": {
       "cpu": {
         "videos": 4,
         "frames_processed": 2325,
-        "wall_clock_seconds": 499.3858,
-        "effective_fps": 4.6557,
+        "wall_clock_seconds": 117.0132,
+        "effective_fps": 19.8695,
         "stage_average_ms": {
-          "detect": 200.9132,
-          "events": 4.5704,
-          "motion": 1.0131,
-          "read": 5.2039,
-          "track": 0.5605
+          "detect": 46.2838,
+          "events": 1.1035,
+          "motion": 0.2914,
+          "read": 1.7317,
+          "track": 0.1438
         }
       }
     }
@@ -165,14 +165,14 @@
       "runtime": {
         "device": "cpu",
         "frames_processed": 600,
-        "wall_clock_seconds": 141.1727,
-        "effective_fps": 4.2501,
+        "wall_clock_seconds": 29.0831,
+        "effective_fps": 20.6305,
         "stage_total_seconds": {
-          "detect": 128.785801,
-          "events": 6.123703,
-          "motion": 0.623958,
-          "read": 3.263779,
-          "track": 0.707005
+          "detect": 26.089521,
+          "events": 1.290119,
+          "motion": 0.162045,
+          "read": 0.938571,
+          "track": 0.158301
         }
       },
       "detection": {
@@ -300,14 +300,14 @@
       "runtime": {
         "device": "cpu",
         "frames_processed": 525,
-        "wall_clock_seconds": 101.6208,
-        "effective_fps": 5.1663,
+        "wall_clock_seconds": 26.4796,
+        "effective_fps": 19.8266,
         "stage_total_seconds": {
-          "detect": 94.314533,
-          "events": 2.64864,
-          "motion": 0.5051,
-          "read": 2.564774,
-          "track": 0.349597
+          "detect": 24.106296,
+          "events": 0.72262,
+          "motion": 0.152042,
+          "read": 0.990793,
+          "track": 0.098501
         }
       },
       "detection": {
@@ -440,14 +440,14 @@
       "runtime": {
         "device": "cpu",
         "frames_processed": 600,
-        "wall_clock_seconds": 132.812,
-        "effective_fps": 4.5177,
+        "wall_clock_seconds": 29.9606,
+        "effective_fps": 20.0263,
         "stage_total_seconds": {
-          "detect": 126.269176,
-          "events": 0.930765,
-          "motion": 0.6443,
-          "read": 3.28125,
-          "track": 0.127442
+          "detect": 27.953363,
+          "events": 0.238132,
+          "motion": 0.177606,
+          "read": 1.096964,
+          "track": 0.036847
         }
       },
       "detection": {
@@ -561,24 +561,24 @@
       "runtime": {
         "device": "cpu",
         "frames_processed": 600,
-        "wall_clock_seconds": 123.7802,
-        "effective_fps": 4.8473,
+        "wall_clock_seconds": 31.4899,
+        "effective_fps": 19.0537,
         "stage_total_seconds": {
-          "detect": 117.753671,
-          "events": 0.922969,
-          "motion": 0.58209,
-          "read": 2.989329,
-          "track": 0.119077
+          "detect": 29.460725,
+          "events": 0.314774,
+          "motion": 0.185756,
+          "read": 0.999795,
+          "track": 0.04079
         }
       },
       "detection": {
         "counts_by_class": {
           "car": {
-            "precision": 0.9945,
-            "recall": 0.1341,
-            "tp": 902,
-            "fp": 5,
-            "fn": 5826
+            "precision": 0.996,
+            "recall": 0.1497,
+            "tp": 1007,
+            "fp": 4,
+            "fn": 5721
           },
           "person": {
             "precision": 0.0,
@@ -599,33 +599,33 @@
       "tracking": {
         "counts": {
           "gt_count": 8118,
-          "pred_count": 907,
-          "matched_count": 902,
-          "matched_iou_sum": 785.8760604899774,
-          "fp": 5,
-          "fn": 7216,
-          "id_switches": 2,
-          "idtp": 891,
-          "idfp": 16,
-          "idfn": 7227
+          "pred_count": 1011,
+          "matched_count": 1007,
+          "matched_iou_sum": 889.0766791062092,
+          "fp": 4,
+          "fn": 7111,
+          "id_switches": 0,
+          "idtp": 1007,
+          "idfp": 4,
+          "idfn": 7111
         },
         "metrics": {
-          "mota": 0.1102,
-          "motp": 0.8713,
-          "idf1": 0.1975,
-          "precision": 0.9945,
-          "recall": 0.1111,
-          "id_precision": 0.9824,
-          "id_recall": 0.1098,
-          "id_switches": 2,
-          "matched_count": 902,
-          "fp": 5,
-          "fn": 7216,
+          "mota": 0.1236,
+          "motp": 0.8829,
+          "idf1": 0.2206,
+          "precision": 0.996,
+          "recall": 0.124,
+          "id_precision": 0.996,
+          "id_recall": 0.124,
+          "id_switches": 0,
+          "matched_count": 1007,
+          "fp": 4,
+          "fn": 7111,
           "gt_count": 8118,
-          "pred_count": 907,
-          "idtp": 891,
-          "idfp": 16,
-          "idfn": 7227
+          "pred_count": 1011,
+          "idtp": 1007,
+          "idfp": 4,
+          "idfn": 7111
         }
       },
       "events": {
@@ -645,11 +645,11 @@
           "line_crossing": {
             "precision": 0.0,
             "recall": 0.0,
-            "false_alerts_per_minute": 6.0,
+            "false_alerts_per_minute": 3.0,
             "mean_alert_latency_seconds": 0.0,
             "mean_alert_timing_error_seconds": 0.0,
             "tp": 0,
-            "fp": 2,
+            "fp": 1,
             "fn": 0,
             "latencies": [],
             "latency_errors": []

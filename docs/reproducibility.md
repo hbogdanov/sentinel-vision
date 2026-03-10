@@ -124,3 +124,20 @@ If you quote benchmark numbers in the README or a portfolio, include:
 - the hardware
 
 Otherwise the result is not reproducible enough for engineering review.
+
+## Video asset changes
+
+If you re-encode any benchmark clip to reduce repository size, treat that as an input change to the benchmark:
+
+```bash
+python -m scripts.compress_benchmark_videos --input-dir data/eval/videos --output-dir data/eval/videos_compressed --crf 28 --preset slow --max-width 960
+python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest_public_datasets.json --config configs/default.yaml --profile edge_cpu --device cpu --model models/yolo11n.pt --predictions-dir data/eval/predictions_public --output-json data/eval/results/public_dataset_cpu.json --output-markdown docs/results_public_dataset_cpu.md
+python -m scripts.render_metrics_report --input-json data/eval/results/public_dataset_cpu.json --output-html docs/results_public_dataset_cpu.html
+```
+
+On Windows, if Ultralytics cannot write to the default roaming profile directory in your shell, point it at a writable repo-local directory before running the live benchmark:
+
+```powershell
+$env:YOLO_CONFIG_DIR="$PWD\\.cache\\ultralytics"
+$env:ULTRALYTICS_SETTINGS_DIR="$PWD\\.cache\\ultralytics"
+```

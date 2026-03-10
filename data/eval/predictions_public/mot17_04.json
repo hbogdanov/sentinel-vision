@@ -1,7 +1,7 @@
 {
   "video_id": "mot17_04",
   "fps": 30.0,
-  "duration_seconds": 30.0,
+  "duration_seconds": 20.0,
   "detections": [
     {
       "frame_index": 1,
@@ -85413,14 +85413,14 @@
   "runtime": {
     "device": "cpu",
     "frames_processed": 600,
-    "wall_clock_seconds": 141.172744,
-    "effective_fps": 4.2501,
+    "wall_clock_seconds": 29.083107,
+    "effective_fps": 20.6305,
     "stage_total_seconds": {
-      "detect": 128.785801,
-      "events": 6.123703,
-      "motion": 0.623958,
-      "read": 3.263779,
-      "track": 0.707005
+      "detect": 26.089521,
+      "events": 1.290119,
+      "motion": 0.162045,
+      "read": 0.938571,
+      "track": 0.158301
     }
   }
 }

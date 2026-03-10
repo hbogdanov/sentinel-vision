@@ -43122,14 +43122,14 @@
   "runtime": {
     "device": "cpu",
     "frames_processed": 525,
-    "wall_clock_seconds": 101.620818,
-    "effective_fps": 5.1663,
+    "wall_clock_seconds": 26.479598,
+    "effective_fps": 19.8266,
     "stage_total_seconds": {
-      "detect": 94.314533,
-      "events": 2.64864,
-      "motion": 0.5051,
-      "read": 2.564774,
-      "track": 0.349597
+      "detect": 24.106296,
+      "events": 0.72262,
+      "motion": 0.152042,
+      "read": 0.990793,
+      "track": 0.098501
     }
   }
 }

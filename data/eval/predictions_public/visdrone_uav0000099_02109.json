@@ -1,7 +1,7 @@
 {
   "video_id": "visdrone_uav0000099_02109",
   "fps": 30.0,
-  "duration_seconds": 30.0,
+  "duration_seconds": 20.0,
   "detections": [
     {
       "frame_index": 1,
@@ -10200,14 +10200,14 @@
   "runtime": {
     "device": "cpu",
     "frames_processed": 600,
-    "wall_clock_seconds": 132.812007,
-    "effective_fps": 4.5177,
+    "wall_clock_seconds": 29.960611,
+    "effective_fps": 20.0263,
     "stage_total_seconds": {
-      "detect": 126.269176,
-      "events": 0.930765,
-      "motion": 0.6443,
-      "read": 3.28125,
-      "track": 0.127442
+      "detect": 27.953363,
+      "events": 0.238132,
+      "motion": 0.177606,
+      "read": 1.096964,
+      "track": 0.036847
     }
   }
 }
