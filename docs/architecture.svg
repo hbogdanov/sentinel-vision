@@ -19,17 +19,17 @@
   <rect class="panel" x="30" y="55" width="150" height="88" />
   <text class="ink label" x="55" y="90">Video Input</text>
   <text class="ink small" x="55" y="115">Webcam / RTSP / File</text>
-  <rect class="panel" x="220" y="55" width="160" height="88" />
-  <text class="ink label" x="255" y="90">YOLO Detection</text>
-  <text class="ink small" x="255" y="115">Target classes + scores</text>
-  <rect class="panel" x="420" y="55" width="170" height="88" />
-  <text class="ink label" x="452" y="90">ByteTrack / BoT-SORT</text>
-  <text class="ink small" x="452" y="115">Stable IDs + motion state</text>
-  <rect class="panel" x="630" y="35" width="310" height="130" />
-  <text class="ink label" x="655" y="70">Event Layer</text>
-  <text class="ink small" x="655" y="95">Intrusion, loitering, line crossing</text>
-  <text class="ink small" x="655" y="115">wrong-way, after-hours, vehicle zone</text>
-  <text class="ink small" x="655" y="135">polygon + line zone metadata</text>
+  <rect class="panel" x="220" y="55" width="175" height="88" />
+  <text class="ink label" x="242" y="90">YOLO Detection</text>
+  <text class="ink small" x="242" y="115">Target classes + scores</text>
+  <rect class="panel" x="425" y="55" width="220" height="88" />
+  <text class="ink label" x="445" y="90">ByteTrack / BoT-SORT</text>
+  <text class="ink small" x="445" y="115">Stable IDs + motion state</text>
+  <rect class="panel" x="675" y="35" width="265" height="130" />
+  <text class="ink label" x="697" y="70">Event Layer</text>
+  <text class="ink small" x="697" y="95">Intrusion, loitering, line crossing</text>
+  <text class="ink small" x="697" y="115">wrong-way, after-hours, vehicle zone</text>
+  <text class="ink small" x="697" y="135">polygon + line zone metadata</text>
   <rect class="panel" x="120" y="205" width="250" height="86" />
   <text class="ink label" x="145" y="240">Alert Output</text>
   <text class="ink small" x="145" y="265">Snapshots, pre/post clips, JSONL</text>
@@ -40,9 +40,9 @@
   <text class="ink label" x="738" y="240">API + Dashboard</text>
   <text class="ink small" x="738" y="265">FastAPI + Streamlit</text>
   <path class="arrow" d="M180 99 H220" />
-  <path class="arrow" d="M380 99 H420" />
-  <path class="arrow" d="M590 99 H630" />
-  <path class="arrow" d="M785 165 V205" />
+  <path class="arrow" d="M395 99 H425" />
+  <path class="arrow" d="M645 99 H675" />
+  <path class="arrow" d="M807 165 V205" />
   <path class="arrow" d="M555 143 V205" />
   <path class="arrow" d="M370 248 H430" />
   <path class="arrow" d="M650 248 H710" />

@@ -2,6 +2,12 @@
 
 Sentinel Vision is a real-time safety analytics pipeline for webcam feeds, video files, or RTSP streams. It detects people and vehicles, tracks them across frames, evaluates safety events, saves operator-friendly alert evidence, and exposes a persistent alert backend with filtering and dashboard views.
 
+![Sentinel Vision intrusion demo](demo/screenshots/readme_demo_mot17_09_intrusion.jpg)
+
+Real-time detection, tracking, and intrusion alerting on a MOT17 clip. Each pedestrian is tracked with persistent IDs; entering the restricted polygon triggers an alert event.
+
+Optional short demo clip: [readme_demo_mot17_09_intrusion.gif](demo/screenshots/readme_demo_mot17_09_intrusion.gif)
+
 ## Overview
 
 - Input: webcam, local video file, or RTSP stream
