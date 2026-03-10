@@ -96,6 +96,16 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(tmp_path: Path, mon
                 "target_classes": ["person"],
             },
             "vehicle_in_pedestrian_zone": {"enabled": False, "cooldown_seconds": 5, "target_classes": ["car"]},
+            "abandoned_object": {
+                "enabled": False,
+                "cooldown_seconds": 30,
+                "unattended_seconds": 20,
+                "min_stationary_seconds": 8,
+                "stationary_radius_pixels": 20,
+                "owner_max_distance_pixels": 80,
+                "target_classes": ["backpack"],
+                "owner_classes": ["person"],
+            },
         },
         "input": {"source": "fake", "read_failure_threshold": 1, "reconnect_attempts": 0, "reconnect_backoff_seconds": 0.0},
         "runtime": {
@@ -171,6 +181,16 @@ def test_pipeline_dispatch_logs_failure_when_endpoint_errors(tmp_path: Path, mon
                 "target_classes": ["person"],
             },
             "vehicle_in_pedestrian_zone": {"enabled": False, "cooldown_seconds": 5, "target_classes": ["car"]},
+            "abandoned_object": {
+                "enabled": False,
+                "cooldown_seconds": 30,
+                "unattended_seconds": 20,
+                "min_stationary_seconds": 8,
+                "stationary_radius_pixels": 20,
+                "owner_max_distance_pixels": 80,
+                "target_classes": ["backpack"],
+                "owner_classes": ["person"],
+            },
         },
         "input": {"source": "fake", "read_failure_threshold": 1, "reconnect_attempts": 0, "reconnect_backoff_seconds": 0.0},
         "runtime": {

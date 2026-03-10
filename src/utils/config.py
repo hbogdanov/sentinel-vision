@@ -47,6 +47,16 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "cooldown_seconds": 5,
             "target_classes": ["car", "truck", "bus", "motorcycle", "bicycle"],
         },
+        "abandoned_object": {
+            "enabled": True,
+            "cooldown_seconds": 30,
+            "unattended_seconds": 20,
+            "min_stationary_seconds": 8,
+            "stationary_radius_pixels": 20,
+            "owner_max_distance_pixels": 80,
+            "target_classes": ["backpack", "suitcase", "handbag", "bicycle"],
+            "owner_classes": ["person"],
+        },
     },
     "input": {"source": 0, "read_failure_threshold": 30, "reconnect_attempts": 3, "reconnect_backoff_seconds": 1.0},
     "runtime": {

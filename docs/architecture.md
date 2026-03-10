@@ -29,6 +29,7 @@
 - `src/events/wrong_way.py`: motion direction checks inside configured areas
 - `src/events/after_hours.py`: occupancy checks against local operating hours
 - `src/events/vehicle_zone.py`: vehicle detection inside pedestrian-only regions
+- `src/events/abandoned_object.py`: unattended asset detection using stationary-item tracking plus nearest-owner distance checks
 - `src/io/video.py`: video capture management and source parsing
 - `src/io/recorder.py`: annotated output, pre/post alert clip capture, metadata sidecars, and duplicate suppression
 - `src/io/health.py`: camera/read/reconnect health state persistence
@@ -44,7 +45,7 @@ The current implementation is focused on the core pipeline:
 
 - Detection uses an off-the-shelf YOLO model
 - Tracking defaults to a ByteTrack-style two-stage association pipeline, with an optional appearance-aware BoT-SORT-style mode
-- Event logic covers intrusion, loitering, line crossing, wrong-way motion, after-hours occupancy, and vehicle zone violations
+- Event logic covers intrusion, loitering, line crossing, wrong-way motion, after-hours occupancy, vehicle zone violations, and abandoned-object detection
 - Perspective-aware zone reasoning can operate in normalized ground-plane coordinates when per-camera homography calibration is available
 - Multi-camera configs share one central alert API while keeping per-camera evidence and health artifacts isolated on disk
 

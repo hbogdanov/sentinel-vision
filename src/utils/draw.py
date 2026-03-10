@@ -11,6 +11,7 @@ from src.inference.tracker import Track
 
 SEVERITY_COLORS = {
     "after_hours_occupancy": (0, 64, 255),
+    "abandoned_object": (60, 60, 255),
     "intrusion": (0, 96, 255),
     "wrong_way": (0, 140, 255),
     "vehicle_in_pedestrian_zone": (0, 180, 255),

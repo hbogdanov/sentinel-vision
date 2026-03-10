@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from src.events.after_hours import AfterHoursOccupancyDetector
+from src.events.abandoned_object import AbandonedObjectDetector
 from src.events.line_crossing import LineCrossingDetector
 from src.events.vehicle_zone import VehicleInPedestrianZoneDetector
 from src.events.wrong_way import WrongWayDetector
@@ -75,3 +76,54 @@ def test_vehicle_in_pedestrian_zone_fires_on_vehicle_entry() -> None:
     assert first == []
     assert len(second) == 1
     assert second[0]["event_type"] == "vehicle_in_pedestrian_zone"
+
+
+def test_abandoned_object_fires_after_item_is_stationary_and_owner_leaves() -> None:
+    detector = AbandonedObjectDetector(
+        enabled=True,
+        cooldown_seconds=30,
+        unattended_seconds=5,
+        min_stationary_seconds=3,
+        stationary_radius_pixels=2,
+        owner_max_distance_pixels=15,
+        target_classes=["backpack"],
+        owner_classes=["person"],
+    )
+    zone = PolygonZone("bag_drop_zone", [(0, 0), (100, 0), (100, 100), (0, 100)], tags=("abandoned_object",))
+    bag = Track(track_id=10, bbox=(40, 40, 50, 52), label="backpack", score=0.93, last_seen_frame=0)
+    nearby_owner = Track(track_id=1, bbox=(48, 40, 60, 70), label="person", score=0.95, last_seen_frame=0)
+    far_owner = Track(track_id=1, bbox=(80, 40, 92, 70), label="person", score=0.95, last_seen_frame=1)
+    start = datetime(2026, 3, 8, tzinfo=timezone.utc)
+
+    first = detector.evaluate([bag, nearby_owner], [zone], 0, start, 30.0, "cam_1")
+    second = detector.evaluate([bag, far_owner], [zone], 1, start.replace(second=4), 30.0, "cam_1")
+    third = detector.evaluate([bag, far_owner], [zone], 2, start.replace(second=9), 30.0, "cam_1")
+
+    assert first == []
+    assert second == []
+    assert len(third) == 1
+    assert third[0]["event_type"] == "abandoned_object"
+    assert third[0]["class"] == "backpack"
+
+
+def test_abandoned_object_does_not_fire_while_item_is_still_moving() -> None:
+    detector = AbandonedObjectDetector(
+        enabled=True,
+        cooldown_seconds=30,
+        unattended_seconds=4,
+        min_stationary_seconds=3,
+        stationary_radius_pixels=2,
+        owner_max_distance_pixels=10,
+        target_classes=["backpack"],
+        owner_classes=["person"],
+    )
+    zone = PolygonZone("bag_drop_zone", [(0, 0), (100, 0), (100, 100), (0, 100)], tags=("abandoned_object",))
+    bag_a = Track(track_id=10, bbox=(20, 20, 30, 32), label="backpack", score=0.93, last_seen_frame=0)
+    bag_b = Track(track_id=10, bbox=(28, 20, 38, 32), label="backpack", score=0.93, last_seen_frame=1)
+    start = datetime(2026, 3, 8, tzinfo=timezone.utc)
+
+    first = detector.evaluate([bag_a], [zone], 0, start, 30.0, "cam_1")
+    second = detector.evaluate([bag_b], [zone], 1, start.replace(second=5), 30.0, "cam_1")
+
+    assert first == []
+    assert second == []

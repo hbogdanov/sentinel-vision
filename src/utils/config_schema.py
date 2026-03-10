@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, TypeAdapter, field_validator, model_validator
 
 
-SUPPORTED_CLASSES = {"person", "car", "truck", "bus", "motorcycle", "bicycle"}
+SUPPORTED_CLASSES = {"person", "car", "truck", "bus", "motorcycle", "bicycle", "backpack", "handbag", "suitcase"}
 
 
 class ModelConfig(BaseModel):
@@ -119,7 +119,7 @@ class AfterHoursEventConfig(IntrusionEventConfig):
     start_time: str = "08:00"
     end_time: str = "18:00"
     timezone: str = "America/New_York"
-    target_classes: list[str] = Field(default_factory=lambda: ["person"])
+    target_classes: list[str] = Field(default_factory=lambda: ["person", "backpack", "handbag", "suitcase"])
 
     @field_validator("start_time", "end_time")
     @classmethod
@@ -160,6 +160,39 @@ class VehicleZoneEventConfig(IntrusionEventConfig):
         return value
 
 
+class AbandonedObjectEventConfig(IntrusionEventConfig):
+    unattended_seconds: float = 20.0
+    min_stationary_seconds: float = 8.0
+    stationary_radius_pixels: float = 20.0
+    owner_max_distance_pixels: float = 80.0
+    target_classes: list[str] = Field(default_factory=lambda: ["backpack", "suitcase", "handbag", "bicycle"])
+    owner_classes: list[str] = Field(default_factory=lambda: ["person"])
+
+    @field_validator(
+        "unattended_seconds",
+        "min_stationary_seconds",
+        "stationary_radius_pixels",
+        "owner_max_distance_pixels",
+    )
+    @classmethod
+    def validate_positive_float(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("events.abandoned_object thresholds must be > 0.")
+        return value
+
+    @field_validator("target_classes")
+    @classmethod
+    def validate_target_classes(cls, value: list[str]) -> list[str]:
+        _validate_supported_classes(value, field_name="events.abandoned_object.target_classes")
+        return value
+
+    @field_validator("owner_classes")
+    @classmethod
+    def validate_owner_classes(cls, value: list[str]) -> list[str]:
+        _validate_supported_classes(value, field_name="events.abandoned_object.owner_classes")
+        return value
+
+
 class EventsConfig(BaseModel):
     intrusion: IntrusionEventConfig = Field(default_factory=IntrusionEventConfig)
     loitering: LoiteringEventConfig = Field(default_factory=LoiteringEventConfig)
@@ -167,6 +200,7 @@ class EventsConfig(BaseModel):
     wrong_way: WrongWayEventConfig = Field(default_factory=WrongWayEventConfig)
     after_hours_occupancy: AfterHoursEventConfig = Field(default_factory=AfterHoursEventConfig)
     vehicle_in_pedestrian_zone: VehicleZoneEventConfig = Field(default_factory=VehicleZoneEventConfig)
+    abandoned_object: AbandonedObjectEventConfig = Field(default_factory=AbandonedObjectEventConfig)
 
 
 class InputConfig(BaseModel):

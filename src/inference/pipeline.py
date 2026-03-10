@@ -12,6 +12,7 @@ from urllib import request
 import cv2
 
 from src.events.after_hours import AfterHoursOccupancyDetector
+from src.events.abandoned_object import AbandonedObjectDetector
 from src.events.intrusion import IntrusionDetector
 from src.events.line_crossing import LineCrossingDetector
 from src.events.loitering import LoiteringDetector
@@ -65,6 +66,7 @@ class SentinelPipeline:
         wrong_way_cfg = config["events"]["wrong_way"]
         after_hours_cfg = config["events"]["after_hours_occupancy"]
         vehicle_zone_cfg = config["events"]["vehicle_in_pedestrian_zone"]
+        abandoned_object_cfg = config["events"]["abandoned_object"]
         self.line_crossing = LineCrossingDetector(
             enabled=bool(line_crossing_cfg.get("enabled", True)),
             cooldown_seconds=float(line_crossing_cfg.get("cooldown_seconds", 3)),
@@ -90,6 +92,16 @@ class SentinelPipeline:
             target_classes=list(
                 vehicle_zone_cfg.get("target_classes", ["car", "truck", "bus", "motorcycle", "bicycle"])
             ),
+        )
+        self.abandoned_object = AbandonedObjectDetector(
+            enabled=bool(abandoned_object_cfg.get("enabled", True)),
+            cooldown_seconds=float(abandoned_object_cfg.get("cooldown_seconds", 30)),
+            unattended_seconds=float(abandoned_object_cfg.get("unattended_seconds", 20)),
+            min_stationary_seconds=float(abandoned_object_cfg.get("min_stationary_seconds", 8)),
+            stationary_radius_pixels=float(abandoned_object_cfg.get("stationary_radius_pixels", 20)),
+            owner_max_distance_pixels=float(abandoned_object_cfg.get("owner_max_distance_pixels", 80)),
+            target_classes=list(abandoned_object_cfg.get("target_classes", ["backpack", "suitcase", "handbag", "bicycle"])),
+            owner_classes=list(abandoned_object_cfg.get("owner_classes", ["person"])),
         )
         output_cfg = config["output"]
         self.event_logger = EventLogger(output_cfg["log_path"])
@@ -372,6 +384,16 @@ class SentinelPipeline:
             self.vehicle_in_pedestrian_zone.evaluate(
                 tracks=tracks,
                 zones=polygon_zones(self.zones, tag="pedestrian_only"),
+                frame_index=frame_index,
+                timestamp=timestamp,
+                fps=fps,
+                camera_id=self.camera_id,
+            )
+        )
+        events.extend(
+            self.abandoned_object.evaluate(
+                tracks=tracks,
+                zones=polygon_zones(self.zones, tag="abandoned_object"),
                 frame_index=frame_index,
                 timestamp=timestamp,
                 fps=fps,

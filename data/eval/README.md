@@ -102,6 +102,37 @@ python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json -
 
 Run CPU and GPU passes separately if you want direct throughput comparisons.
 
+## Manifest explanation
+
+`benchmark_manifest.json` is the single source of truth for what the benchmark means.
+
+Each entry tells the evaluator:
+
+- which clip is in scope
+- which ground-truth file defines expected detections and events
+- which prediction file should be scored
+- which scene and challenge tags the clip contributes
+- which per-clip config overrides were used, if any
+
+If you add, remove, or retag clips in the manifest, the benchmark has changed and the reported totals should be regenerated.
+
+## Reproducibility notes
+
+The checked-in `docs/results.md` and `data/eval/results/latest.json` files are score-only artifacts produced from the checked-in reference prediction JSON files. That means:
+
+- the exact reproduction commands are deterministic
+- hardware is not part of the checked-in result provenance
+- model runtime only becomes relevant when running `scripts/run_benchmark.py`
+
+For live runs, report all of the following with the results:
+
+- command used
+- manifest path
+- config path
+- model path
+- device used
+- hardware used
+
 ## Labeling guidance
 
 - Expand each benchmark pass to 8 to 15 short clips before presenting metrics externally.

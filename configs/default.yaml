@@ -8,6 +8,9 @@ model:
     - car
     - truck
     - bus
+    - backpack
+    - handbag
+    - suitcase
 
 tracking:
   type: bytetrack
@@ -59,6 +62,20 @@ events:
       - bus
       - motorcycle
       - bicycle
+  abandoned_object:
+    enabled: true
+    cooldown_seconds: 30
+    unattended_seconds: 20
+    min_stationary_seconds: 8
+    stationary_radius_pixels: 20
+    owner_max_distance_pixels: 80
+    target_classes:
+      - backpack
+      - suitcase
+      - handbag
+      - bicycle
+    owner_classes:
+      - person
 
 input:
   source: 0
@@ -133,5 +150,13 @@ zones:
       - [260, 300]
       - [260, 470]
       - [80, 470]
+  - name: unattended_bag_zone
+    type: polygon
+    tags: [abandoned_object]
+    points:
+      - [640, 180]
+      - [860, 180]
+      - [860, 440]
+      - [640, 440]
 
 cameras: []

@@ -7,7 +7,7 @@ Sentinel Vision is a real-time safety analytics pipeline for webcam feeds, video
 - Input: webcam, local video file, or RTSP stream
 - Detection: YOLO-based people and vehicle detection
 - Tracking: ByteTrack by default, with an appearance-aware BoT-SORT-style option
-- Event logic: intrusion, loitering, line crossing, wrong-way, after-hours occupancy, vehicle zone violations
+- Event logic: intrusion, loitering, line crossing, wrong-way, after-hours occupancy, vehicle zone violations, abandoned-object detection
 - Output: annotated video, snapshots, pre/post alert clips, JSON events, SQLite alert history
 - Backend: FastAPI alert API plus Streamlit dashboard
 
@@ -25,7 +25,7 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 - Optional feature-based camera motion compensation with affine or homography estimation
 - Optional image-to-ground-plane homography for normalized zone reasoning and occupancy estimates
 - Polygon and line zone definitions with tags and metadata
-- Multi-event safety analytics for restricted areas, tripwires, motion direction, and occupancy policy
+- Multi-event safety analytics for restricted areas, tripwires, motion direction, occupancy policy, and unattended asset detection
 - Snapshot plus pre/post event alert clip generation with metadata sidecars
 - SQLite-backed alert API with filterable history and stats
 - Streamlit dashboard for operator triage
@@ -124,6 +124,7 @@ The default YAML config is at [configs/default.yaml](configs/default.yaml).
 - Tracking backends: `bytetrack`, `botsort`, `simple`
 - Zones can be `polygon` or `line`
 - Zone `tags` and `metadata` route zones to specific event logic
+- `abandoned_object` zones detect stationary assets whose nearest owner has moved beyond a configurable distance for a configurable dwell time
 - `perspective.image_points` and `perspective.world_points` enable ground-plane projection for normalized-space intrusion/loitering reasoning
 - Event payloads include `world_position` and zone occupancy stats when perspective calibration is configured
 - Alert output settings include `buffer_seconds`, `post_event_seconds`, and `duplicate_suppression_seconds`
@@ -134,6 +135,7 @@ The default YAML config is at [configs/default.yaml](configs/default.yaml).
 - `--device` and `--model` CLI flags override inference backend and model selection without editing YAML
 - Multi-camera configs can define a top-level `cameras` list; each camera gets its own event log, health file, annotated output, and alert clip directory automatically
 - The API and dashboard use a persistent SQLite DB at `data/outputs/alerts.db` by default
+- Supported detector classes now include `backpack`, `handbag`, and `suitcase` for unattended-object workflows
 
 Config loading now uses schema validation with explicit checks for malformed zones, invalid thresholds, unsupported classes, and invalid dashboard URLs.
 
@@ -150,6 +152,8 @@ Minimum operator API:
 
 ## Benchmark Results
 
+Reproducibility details live in [docs/reproducibility.md](docs/reproducibility.md).
+
 Generate predictions and score the benchmark in one pass:
 
 ```bash
@@ -165,11 +169,26 @@ python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json -
 Current benchmark summary is in [docs/results.md](docs/results.md).
 Visual metrics dashboard report: [docs/results_dashboard.html](docs/results_dashboard.html)
 
+For the checked-in `docs/results.md` artifact:
+
+- Reproduction path: score-only from checked-in prediction JSON files
+- Manifest: `data/eval/benchmark_manifest.json`
+- Config used for live benchmark runs: `configs/default.yaml`
+- Default model for live benchmark runs: `yolo11n.pt`
+- Hardware: not applicable for the checked-in score-only artifact because no live inference was run
+
 - Detection `person`: precision `1.000`, recall `0.944`
 - Tracking: MOTA `0.833`, MOTP `1.000`, IDF1 `0.778`, ID switches `2`
 - Events overall: precision `0.667`, recall `1.000`, false alerts `2.308/min`
 
 The benchmark manifest now supports per-clip `scene_types`, `challenge_tags`, `subject_classes`, clip-specific `config_override`, and optional runtime payloads so CPU and GPU passes can be compared directly.
+
+Exact reproduction commands:
+
+```bash
+python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
+python scripts/render_metrics_report.py --input-json data/eval/results/latest.json --output-html docs/results_dashboard.html
+```
 
 ## Camera Health
 
@@ -214,6 +233,5 @@ Deployment notes for Docker, Compose profiles, CPU/GPU selection, config profile
 
 ## Roadmap
 
-- Add abandoned-object logic
 - Expand the benchmark asset pack toward MOT17, VIRAT, or VisDrone-backed evaluation clips
 - Add stronger learned re-identification for BoT-SORT-style tracking
