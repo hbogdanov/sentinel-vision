@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Protocol
 
 import numpy as np
+
 try:
     from scipy.optimize import linear_sum_assignment
 except ImportError:  # pragma: no cover - fallback path when scipy is unavailable
@@ -704,7 +705,10 @@ def _solve_assignment(
 
     if linear_sum_assignment is None:
         ranked = sorted(
-            ((score, track_id, det_idx) for (track_id, det_idx), score in scores.items()),
+            (
+                (score, track_id, det_idx)
+                for (track_id, det_idx), score in scores.items()
+            ),
             reverse=True,
         )
         matches: list[tuple[int, int]] = []

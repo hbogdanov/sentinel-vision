@@ -33,7 +33,11 @@ def draw_frame(
     if zone_heatmap_overlay is not None:
         heatmap_mask = zone_heatmap_overlay.any(axis=2)
         blended = cv2.addWeighted(
-            zone_heatmap_overlay, zone_heatmap_opacity, frame, 1.0 - zone_heatmap_opacity, 0.0
+            zone_heatmap_overlay,
+            zone_heatmap_opacity,
+            frame,
+            1.0 - zone_heatmap_opacity,
+            0.0,
         )
         frame[heatmap_mask] = blended[heatmap_mask]
 

@@ -1,6 +1,9 @@
 import numpy as np
 
-from src.inference.appearance import HistogramAppearanceEmbedder, build_appearance_embedder
+from src.inference.appearance import (
+    HistogramAppearanceEmbedder,
+    build_appearance_embedder,
+)
 from src.inference.detector import Detection
 from src.inference.tracker import BoTSORTTracker, ByteTracker, _solve_assignment
 

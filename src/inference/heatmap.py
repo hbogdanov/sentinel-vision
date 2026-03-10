@@ -132,5 +132,7 @@ class ZoneOccupancyHeatmap:
         self._heatmap = np.zeros((height, width), dtype=np.float32)
         self._zone_mask = np.zeros((height, width), dtype=np.uint8)
         for zone in zones:
-            points = np.array([(int(x), int(y)) for x, y in zone.points], dtype=np.int32)
+            points = np.array(
+                [(int(x), int(y)) for x, y in zone.points], dtype=np.int32
+            )
             cv2.fillPoly(self._zone_mask, [points], 255)
