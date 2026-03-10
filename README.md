@@ -6,8 +6,6 @@ Sentinel Vision is a real-time safety analytics pipeline for webcam feeds, video
 
 Real-time detection, tracking, and intrusion alerting on a MOT17 clip. Each pedestrian is tracked with persistent IDs; entering the restricted polygon triggers an alert event.
 
-Optional short demo clip: [readme_demo_mot17_09_intrusion.gif](demo/screenshots/readme_demo_mot17_09_intrusion.gif)
-
 ## Overview
 
 - Input: webcam, local video file, or RTSP stream
@@ -16,6 +14,12 @@ Optional short demo clip: [readme_demo_mot17_09_intrusion.gif](demo/screenshots/
 - Event logic: intrusion, loitering, line crossing, wrong-way, after-hours occupancy, vehicle zone violations, abandoned-object detection
 - Output: annotated video, snapshots, pre/post alert clips, JSON events, SQLite alert history
 - Backend: FastAPI alert API plus Streamlit dashboard
+
+## Demo
+
+![Intrusion detection demo](demo/screenshots/readme_demo_mot17_09_intrusion.gif)
+
+Short demo clip from a real pipeline run on a MOT17 scene with tracked pedestrians, a restricted zone, and intrusion alerts.
 
 ## Results At A Glance
 
@@ -61,15 +65,13 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 
 ## Demo
 
-- Demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
+- Demo still: [readme_demo_mot17_09_intrusion.jpg](demo/screenshots/readme_demo_mot17_09_intrusion.jpg)
+- Demo GIF: [readme_demo_mot17_09_intrusion.gif](demo/screenshots/readme_demo_mot17_09_intrusion.gif)
+- Annotated demo video: [readme_demo_mot17_09.mp4](data/outputs/readme_demo_mot17_09.mp4)
 - Benchmark/evaluation assets: [data/eval/README.md](data/eval/README.md)
 - Public benchmark report: [results_public_dataset_benchmark_association_tuned.md](docs/results_public_dataset_benchmark_association_tuned.md)
-
-- Checked-in demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
 - Additional checked-in benchmark clips live under [data/eval/videos](data/eval/videos)
 - Evaluation bundle and reference clips: [data/eval/README.md](data/eval/README.md)
-
-Demo assets that are committed to the repo live in `data/eval/videos/`.
 
 ## Setup
 
