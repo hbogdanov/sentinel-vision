@@ -1,5 +1,5 @@
 {
-  "benchmark_name": "sentinel_vision_micro_benchmark_v1",
+  "benchmark_name": "sentinel_vision_micro_benchmark_v2",
   "videos": [
     {
       "video_id": "office_intrusion_short",
@@ -7,7 +7,30 @@
       "fps": 10,
       "duration_seconds": 6.0,
       "ground_truth": "annotations/office_intrusion_short.json",
-      "predictions": "predictions/office_intrusion_short.json"
+      "predictions": "predictions/office_intrusion_short.json",
+      "scene_types": ["office", "indoor"],
+      "challenge_tags": ["person_only", "restricted_zone"],
+      "subject_classes": ["person"],
+      "notes": "Short single-person intrusion clip.",
+      "config_override": {
+        "zones": [
+          {
+            "name": "restricted_lab",
+            "type": "polygon",
+            "tags": ["restricted"],
+            "metadata": {},
+            "points": [[6, 0], [24, 0], [24, 24], [6, 24]]
+          }
+        ],
+        "events": {
+          "intrusion": {"enabled": true, "cooldown_seconds": 5},
+          "loitering": {"enabled": false},
+          "line_crossing": {"enabled": false},
+          "wrong_way": {"enabled": false},
+          "after_hours_occupancy": {"enabled": false},
+          "vehicle_in_pedestrian_zone": {"enabled": false}
+        }
+      }
     },
     {
       "video_id": "lobby_loiter_short",
@@ -15,7 +38,30 @@
       "fps": 10,
       "duration_seconds": 12.0,
       "ground_truth": "annotations/lobby_loiter_short.json",
-      "predictions": "predictions/lobby_loiter_short.json"
+      "predictions": "predictions/lobby_loiter_short.json",
+      "scene_types": ["office", "indoor"],
+      "challenge_tags": ["person_only", "static_subject"],
+      "subject_classes": ["person"],
+      "notes": "Person remains inside a restricted lobby area long enough to trigger loitering.",
+      "config_override": {
+        "zones": [
+          {
+            "name": "restricted_lab",
+            "type": "polygon",
+            "tags": ["restricted"],
+            "metadata": {},
+            "points": [[18, 8], [40, 8], [40, 44], [18, 44]]
+          }
+        ],
+        "events": {
+          "intrusion": {"enabled": false},
+          "loitering": {"enabled": true, "threshold_seconds": 8, "cooldown_seconds": 20},
+          "line_crossing": {"enabled": false},
+          "wrong_way": {"enabled": false},
+          "after_hours_occupancy": {"enabled": false},
+          "vehicle_in_pedestrian_zone": {"enabled": false}
+        }
+      }
     },
     {
       "video_id": "loading_dock_crossing_short",
@@ -23,7 +69,30 @@
       "fps": 10,
       "duration_seconds": 8.0,
       "ground_truth": "annotations/loading_dock_crossing_short.json",
-      "predictions": "predictions/loading_dock_crossing_short.json"
+      "predictions": "predictions/loading_dock_crossing_short.json",
+      "scene_types": ["loading_dock"],
+      "challenge_tags": ["occlusion", "id_switch_risk", "false_positive_trap"],
+      "subject_classes": ["person"],
+      "notes": "Two people cross at the dock; reference predictions include an intentional false intrusion alert.",
+      "config_override": {
+        "zones": [
+          {
+            "name": "restricted_lab",
+            "type": "polygon",
+            "tags": ["restricted"],
+            "metadata": {},
+            "points": [[10, 0], [22, 0], [22, 24], [10, 24]]
+          }
+        ],
+        "events": {
+          "intrusion": {"enabled": true, "cooldown_seconds": 5},
+          "loitering": {"enabled": false},
+          "line_crossing": {"enabled": false},
+          "wrong_way": {"enabled": false},
+          "after_hours_occupancy": {"enabled": false},
+          "vehicle_in_pedestrian_zone": {"enabled": false}
+        }
+      }
     }
   ]
 }

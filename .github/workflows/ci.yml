@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt black ruff
+
+      - name: Ruff
+        run: ruff check src tests scripts
+
+      - name: Black
+        run: black --check src tests scripts
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Pytest
+        run: pytest -q
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Evaluate bundled benchmark
+        run: python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/ci.json --output-markdown docs/results_ci.md
+
+      - name: Render metrics report
+        run: python scripts/render_metrics_report.py --input-json data/eval/results/ci.json --output-html docs/results_ci.html
+
+      - name: Benchmark CLI help
+        run: python scripts/run_benchmark.py --help

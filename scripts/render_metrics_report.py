@@ -35,6 +35,7 @@ HTML_TEMPLATE = """<!doctype html>
         <div class="card"><div class="label">Videos</div><div class="value">{num_videos}</div></div>
         <div class="card"><div class="label">Duration (s)</div><div class="value">{duration_seconds:.1f}</div></div>
         <div class="card"><div class="label">MOTA</div><div class="value">{mota:.3f}</div></div>
+        <div class="card"><div class="label">IDF1</div><div class="value">{idf1:.3f}</div></div>
         <div class="card"><div class="label">Event Precision</div><div class="value">{event_precision:.3f}</div></div>
         <div class="card"><div class="label">Event Recall</div><div class="value">{event_recall:.3f}</div></div>
       </div>
@@ -46,8 +47,18 @@ HTML_TEMPLATE = """<!doctype html>
     </div>
 
     <div class="section">
+      <h2>Tracking</h2>
+      {tracking_table}
+    </div>
+
+    <div class="section">
       <h2>Events</h2>
       {events_table}
+    </div>
+
+    <div class="section">
+      <h2>Runtime</h2>
+      {runtime_table}
     </div>
 
     <div class="section">
@@ -75,10 +86,13 @@ def main() -> None:
         num_videos=summary["num_videos"],
         duration_seconds=summary["total_duration_seconds"],
         mota=summary["tracking"]["mota"],
+        idf1=summary["tracking"]["idf1"],
         event_precision=summary["events_overall"]["precision"],
         event_recall=summary["events_overall"]["recall"],
         detection_table=_detection_table(summary["detection_by_class"]),
+        tracking_table=_tracking_table(summary["tracking"]),
         events_table=_events_table(summary["events_by_type"]),
+        runtime_table=_runtime_table(summary.get("runtime_by_device", {})),
         videos_table=_videos_table(payload["videos"]),
     )
     output_path = Path(args.output_html)
@@ -95,6 +109,20 @@ def _detection_table(metrics: dict) -> str:
     return f"<table><tr><th>Class</th><th>Precision</th><th>Recall</th><th>TP</th><th>FP</th><th>FN</th></tr>{rows}</table>"
 
 
+def _tracking_table(metrics: dict) -> str:
+    rows = "".join(
+        f"<tr><td>{label}</td><td>{value:.3f}</td></tr>"
+        for label, value in [
+            ("MOTA", metrics["mota"]),
+            ("MOTP", metrics["motp"]),
+            ("IDF1", metrics["idf1"]),
+            ("Precision", metrics["precision"]),
+            ("Recall", metrics["recall"]),
+        ]
+    )
+    return f"<table><tr><th>Metric</th><th>Value</th></tr>{rows}</table>"
+
+
 def _events_table(metrics: dict) -> str:
     rows = "".join(
         f"<tr><td>{label}</td><td>{item['precision']:.3f}</td><td>{item['recall']:.3f}</td><td>{item['false_alerts_per_minute']:.3f}</td><td>{item['mean_alert_latency_seconds']:.3f}</td></tr>"
@@ -103,12 +131,22 @@ def _events_table(metrics: dict) -> str:
     return f"<table><tr><th>Event</th><th>Precision</th><th>Recall</th><th>False Alerts/Min</th><th>Mean Latency (s)</th></tr>{rows}</table>"
 
 
+def _runtime_table(metrics: dict) -> str:
+    if not metrics:
+        return "<p>No runtime samples were present in the evaluation payload.</p>"
+    rows = "".join(
+        f"<tr><td>{device}</td><td>{item['videos']}</td><td>{item['frames_processed']}</td><td>{item['wall_clock_seconds']:.3f}</td><td>{item['effective_fps']:.3f}</td></tr>"
+        for device, item in metrics.items()
+    )
+    return f"<table><tr><th>Device</th><th>Videos</th><th>Frames</th><th>Wall Clock (s)</th><th>Effective FPS</th></tr>{rows}</table>"
+
+
 def _videos_table(videos: list[dict]) -> str:
     rows = "".join(
-        f"<tr><td>{video['video_id']}</td><td>{video['duration_seconds']:.1f}</td><td>{video['tracking']['metrics']['mota']:.3f}</td><td>{', '.join(video['events']['counts_by_type'].keys()) or 'none'}</td></tr>"
+        f"<tr><td>{video['video_id']}</td><td>{video['duration_seconds']:.1f}</td><td>{video['tracking']['metrics']['mota']:.3f}</td><td>{video['tracking']['metrics']['idf1']:.3f}</td><td>{', '.join(video['events']['counts_by_type'].keys()) or 'none'}</td></tr>"
         for video in videos
     )
-    return f"<table><tr><th>Video</th><th>Duration (s)</th><th>MOTA</th><th>Event Types</th></tr>{rows}</table>"
+    return f"<table><tr><th>Video</th><th>Duration (s)</th><th>MOTA</th><th>IDF1</th><th>Event Types</th></tr>{rows}</table>"
 
 
 if __name__ == "__main__":

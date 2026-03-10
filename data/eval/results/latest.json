@@ -2,6 +2,24 @@
   "summary": {
     "num_videos": 3,
     "total_duration_seconds": 26.0,
+    "coverage": {
+      "scene_types": [
+        "indoor",
+        "loading_dock",
+        "office"
+      ],
+      "challenge_tags": [
+        "false_positive_trap",
+        "id_switch_risk",
+        "occlusion",
+        "person_only",
+        "restricted_zone",
+        "static_subject"
+      ],
+      "subject_classes": [
+        "person"
+      ]
+    },
     "detection_by_class": {
       "person": {
         "precision": 1.0,
@@ -13,12 +31,21 @@
     },
     "tracking": {
       "mota": 0.8333,
+      "motp": 1.0,
+      "idf1": 0.7429,
+      "precision": 1.0,
+      "recall": 0.9444,
+      "id_precision": 0.7647,
+      "id_recall": 0.7222,
       "id_switches": 2,
       "matched_count": 17,
       "fp": 0,
       "fn": 1,
       "gt_count": 18,
-      "pred_count": 17
+      "pred_count": 17,
+      "idtp": 13,
+      "idfp": 4,
+      "idfn": 5
     },
     "events_by_type": {
       "intrusion": {
@@ -58,6 +85,21 @@
       "video_id": "office_intrusion_short",
       "fps": 10.0,
       "duration_seconds": 6.0,
+      "metadata": {
+        "scene_types": [
+          "office",
+          "indoor"
+        ],
+        "challenge_tags": [
+          "person_only",
+          "restricted_zone"
+        ],
+        "subject_classes": [
+          "person"
+        ],
+        "notes": "Short single-person intrusion clip."
+      },
+      "runtime": null,
       "detection": {
         "counts_by_class": {
           "person": {
@@ -74,18 +116,31 @@
           "gt_count": 4,
           "pred_count": 4,
           "matched_count": 4,
+          "matched_iou_sum": 4.0,
           "fp": 0,
           "fn": 0,
-          "id_switches": 0
+          "id_switches": 0,
+          "idtp": 4,
+          "idfp": 0,
+          "idfn": 0
         },
         "metrics": {
           "mota": 1.0,
+          "motp": 1.0,
+          "idf1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "id_precision": 1.0,
+          "id_recall": 1.0,
           "id_switches": 0,
           "matched_count": 4,
           "fp": 0,
           "fn": 0,
           "gt_count": 4,
-          "pred_count": 4
+          "pred_count": 4,
+          "idtp": 4,
+          "idfp": 0,
+          "idfn": 0
         }
       },
       "events": {
@@ -113,6 +168,21 @@
       "video_id": "lobby_loiter_short",
       "fps": 10.0,
       "duration_seconds": 12.0,
+      "metadata": {
+        "scene_types": [
+          "office",
+          "indoor"
+        ],
+        "challenge_tags": [
+          "person_only",
+          "static_subject"
+        ],
+        "subject_classes": [
+          "person"
+        ],
+        "notes": "Person remains inside a restricted lobby area long enough to trigger loitering."
+      },
+      "runtime": null,
       "detection": {
         "counts_by_class": {
           "person": {
@@ -129,18 +199,31 @@
           "gt_count": 6,
           "pred_count": 5,
           "matched_count": 5,
+          "matched_iou_sum": 5.0,
           "fp": 0,
           "fn": 1,
-          "id_switches": 0
+          "id_switches": 0,
+          "idtp": 5,
+          "idfp": 0,
+          "idfn": 1
         },
         "metrics": {
           "mota": 0.8333,
+          "motp": 1.0,
+          "idf1": 0.9091,
+          "precision": 1.0,
+          "recall": 0.8333,
+          "id_precision": 1.0,
+          "id_recall": 0.8333,
           "id_switches": 0,
           "matched_count": 5,
           "fp": 0,
           "fn": 1,
           "gt_count": 6,
-          "pred_count": 5
+          "pred_count": 5,
+          "idtp": 5,
+          "idfp": 0,
+          "idfn": 1
         }
       },
       "events": {
@@ -168,6 +251,21 @@
       "video_id": "loading_dock_crossing_short",
       "fps": 10.0,
       "duration_seconds": 8.0,
+      "metadata": {
+        "scene_types": [
+          "loading_dock"
+        ],
+        "challenge_tags": [
+          "occlusion",
+          "id_switch_risk",
+          "false_positive_trap"
+        ],
+        "subject_classes": [
+          "person"
+        ],
+        "notes": "Two people cross at the dock; reference predictions include an intentional false intrusion alert."
+      },
+      "runtime": null,
       "detection": {
         "counts_by_class": {
           "person": {
@@ -184,18 +282,31 @@
           "gt_count": 8,
           "pred_count": 8,
           "matched_count": 8,
+          "matched_iou_sum": 8.0,
           "fp": 0,
           "fn": 0,
-          "id_switches": 2
+          "id_switches": 2,
+          "idtp": 4,
+          "idfp": 4,
+          "idfn": 4
         },
         "metrics": {
           "mota": 0.75,
+          "motp": 1.0,
+          "idf1": 0.5,
+          "precision": 1.0,
+          "recall": 1.0,
+          "id_precision": 0.5,
+          "id_recall": 0.5,
           "id_switches": 2,
           "matched_count": 8,
           "fp": 0,
           "fn": 0,
           "gt_count": 8,
-          "pred_count": 8
+          "pred_count": 8,
+          "idtp": 4,
+          "idfp": 4,
+          "idfn": 4
         }
       },
       "events": {

@@ -150,7 +150,13 @@ Minimum operator API:
 
 ## Benchmark Results
 
-Run the bundled micro-benchmark:
+Generate predictions and score the benchmark in one pass:
+
+```bash
+python scripts/run_benchmark.py --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cpu --output-json data/eval/results/latest.json --output-markdown docs/results.md
+```
+
+Or score an existing set of prediction JSON files:
 
 ```bash
 python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
@@ -160,8 +166,10 @@ Current benchmark summary is in [docs/results.md](docs/results.md).
 Visual metrics dashboard report: [docs/results_dashboard.html](docs/results_dashboard.html)
 
 - Detection `person`: precision `1.000`, recall `0.944`
-- Tracking: MOTA `0.833`, ID switches `2`
+- Tracking: MOTA `0.833`, MOTP `1.000`, IDF1 `0.778`, ID switches `2`
 - Events overall: precision `0.667`, recall `1.000`, false alerts `2.308/min`
+
+The benchmark manifest now supports per-clip `scene_types`, `challenge_tags`, `subject_classes`, clip-specific `config_override`, and optional runtime payloads so CPU and GPU passes can be compared directly.
 
 ## Camera Health
 
@@ -181,13 +189,22 @@ Health status includes:
 python -m pytest -q
 ```
 
+## CI
+
+GitHub Actions runs:
+
+- `ruff check src tests scripts`
+- `black --check src tests scripts`
+- `pytest -q`
+- an offline smoke path that evaluates the bundled benchmark, renders the HTML report, and checks `scripts/run_benchmark.py --help`
+
 ## Deployment
 
 Deployment notes for Docker, Compose profiles, CPU/GPU selection, config profiles, and `systemd` startup are in [docs/deployment.md](docs/deployment.md).
 
 ## Known Limitations
 
-- The bundled benchmark is intentionally small and should be expanded with more manually labeled videos.
+- The bundled asset set is still a starter benchmark; for a credible external evaluation pass you should expand it to roughly 8 to 15 labeled clips with occlusion, false-positive traps, and both person and vehicle footage.
 - The BoT-SORT-style tracker uses lightweight appearance features, not a full learned re-identification model.
 - The Streamlit dashboard is intentionally minimal and optimized for speed of implementation over UI polish.
 - Event logic is rule-based and depends on well-configured zones and camera placement.
@@ -198,5 +215,5 @@ Deployment notes for Docker, Compose profiles, CPU/GPU selection, config profile
 ## Roadmap
 
 - Add abandoned-object logic
-- Expand the benchmark with harder occlusion and multi-camera cases
+- Expand the benchmark asset pack toward MOT17, VIRAT, or VisDrone-backed evaluation clips
 - Add stronger learned re-identification for BoT-SORT-style tracking
