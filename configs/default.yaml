@@ -29,6 +29,10 @@ tracking:
   appearance_weights_path: ""
   appearance_device: cpu
   appearance_input_size: 128
+  trajectory_prediction_enabled: true
+  trajectory_history_size: 6
+  trajectory_prediction_horizon: 3
+  trajectory_smoothing: 0.65
 
 events:
   intrusion:
@@ -123,6 +127,13 @@ output:
   duplicate_suppression_seconds: 10
   clip_writer_queue_size: 16
   health_status_path: data/outputs/camera_health.json
+  zone_heatmap:
+    enabled: false
+    overlay_opacity: 0.35
+    point_radius: 18
+    decay: 0.985
+    output_image_path: data/outputs/zone_heatmap.png
+    output_summary_path: data/outputs/zone_heatmap.json
 
 dashboard:
   enabled: false

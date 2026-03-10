@@ -27,7 +27,16 @@ def draw_frame(
     fps: float,
     track_history: dict[int, deque[tuple[int, int]]] | None = None,
     dwell_timers: dict[int, float] | None = None,
+    zone_heatmap_overlay=None,
+    zone_heatmap_opacity: float = 0.35,
 ):
+    if zone_heatmap_overlay is not None:
+        heatmap_mask = zone_heatmap_overlay.any(axis=2)
+        blended = cv2.addWeighted(
+            zone_heatmap_overlay, zone_heatmap_opacity, frame, 1.0 - zone_heatmap_opacity, 0.0
+        )
+        frame[heatmap_mask] = blended[heatmap_mask]
+
     overlay = frame.copy()
     for zone in zones:
         if isinstance(zone, PolygonZone):
@@ -63,6 +72,8 @@ def draw_frame(
         history = history_map.get(track.track_id)
         if history and len(history) > 1:
             _draw_trail(frame, list(history), color)
+        if track.predicted_path:
+            _draw_prediction(frame, track.center, list(track.predicted_path), color)
 
         x1, y1, x2, y2 = map(int, track.bbox)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
@@ -125,6 +136,22 @@ def _draw_alert_stack(frame, events: list[dict]) -> None:
         cv2.putText(
             frame, text, (32, y), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2
         )
+
+
+def _draw_prediction(
+    frame,
+    start: tuple[float, float],
+    predicted_path: list[tuple[float, float]],
+    color: tuple[int, int, int],
+) -> None:
+    previous = (int(start[0]), int(start[1]))
+    prediction_color = tuple(min(255, channel + 25) for channel in color)
+    for idx, point in enumerate(predicted_path):
+        current = (int(point[0]), int(point[1]))
+        if idx % 2 == 0:
+            cv2.line(frame, previous, current, prediction_color, 1)
+        cv2.circle(frame, current, 2, prediction_color, -1)
+        previous = current
 
 
 def _track_color(label: str) -> tuple[int, int, int]:

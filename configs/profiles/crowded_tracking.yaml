@@ -10,3 +10,7 @@ tracking:
   appearance_weights_path: ""
   appearance_device: cpu
   appearance_input_size: 128
+  trajectory_prediction_enabled: true
+  trajectory_history_size: 8
+  trajectory_prediction_horizon: 4
+  trajectory_smoothing: 0.7

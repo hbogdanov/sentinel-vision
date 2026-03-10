@@ -63,6 +63,10 @@ class TrackingConfig(BaseModel):
     appearance_weights_path: str = ""
     appearance_device: str = "cpu"
     appearance_input_size: int = 128
+    trajectory_prediction_enabled: bool = True
+    trajectory_history_size: int = 6
+    trajectory_prediction_horizon: int = 3
+    trajectory_smoothing: float = 0.65
 
     @field_validator(
         "high_score_threshold",
@@ -73,6 +77,7 @@ class TrackingConfig(BaseModel):
         "appearance_weight",
         "appearance_threshold",
         "appearance_ambiguous_iou_margin",
+        "trajectory_smoothing",
     )
     @classmethod
     def validate_unit_interval(cls, value: float) -> float:
@@ -80,7 +85,13 @@ class TrackingConfig(BaseModel):
             raise ValueError("tracking thresholds must be in the range [0, 1].")
         return value
 
-    @field_validator("max_age_frames", "min_hits", "appearance_input_size")
+    @field_validator(
+        "max_age_frames",
+        "min_hits",
+        "appearance_input_size",
+        "trajectory_history_size",
+        "trajectory_prediction_horizon",
+    )
     @classmethod
     def validate_positive_int(cls, value: int) -> int:
         if value < 1:
@@ -390,6 +401,30 @@ class CameraOverrideConfig(BaseModel):
 
 
 class OutputConfig(BaseModel):
+    class HeatmapConfig(BaseModel):
+        enabled: bool = False
+        overlay_opacity: float = 0.35
+        point_radius: int = 18
+        decay: float = 0.985
+        output_image_path: str = "data/outputs/zone_heatmap.png"
+        output_summary_path: str = "data/outputs/zone_heatmap.json"
+
+        @field_validator("overlay_opacity", "decay")
+        @classmethod
+        def validate_unit_interval(cls, value: float) -> float:
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(
+                    "output.zone_heatmap opacity and decay must be in [0, 1]."
+                )
+            return value
+
+        @field_validator("point_radius")
+        @classmethod
+        def validate_point_radius(cls, value: int) -> int:
+            if value < 1:
+                raise ValueError("output.zone_heatmap.point_radius must be >= 1.")
+            return value
+
     show_window: bool = False
     save_annotated_video: bool = True
     annotated_video_path: str = "data/outputs/annotated.mp4"
@@ -400,6 +435,7 @@ class OutputConfig(BaseModel):
     duplicate_suppression_seconds: float = 10.0
     clip_writer_queue_size: int = 16
     health_status_path: str = "data/outputs/camera_health.json"
+    zone_heatmap: HeatmapConfig = Field(default_factory=HeatmapConfig)
 
     @field_validator(
         "buffer_seconds", "post_event_seconds", "duplicate_suppression_seconds"

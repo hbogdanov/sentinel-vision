@@ -152,6 +152,14 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(
             "post_event_seconds": 0.0,
             "duplicate_suppression_seconds": 10.0,
             "clip_writer_queue_size": 4,
+            "zone_heatmap": {
+                "enabled": True,
+                "overlay_opacity": 0.35,
+                "point_radius": 10,
+                "decay": 0.99,
+                "output_image_path": str(tmp_path / "zone_heatmap.png"),
+                "output_summary_path": str(tmp_path / "zone_heatmap.json"),
+            },
         },
         "dashboard": {"enabled": False, "endpoint": "", "timeout_seconds": 1.0},
         "zones": [
@@ -178,6 +186,12 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(
     assert len(events) == 1
     assert events[0]["event_type"] == "intrusion"
     assert events[0]["camera_id"] == "cam_test"
+    heatmap_summary = json.loads(
+        (tmp_path / "zone_heatmap.json").read_text(encoding="utf-8")
+    )
+    assert heatmap_summary["total_frames"] == 3
+    assert heatmap_summary["zones"]["restricted_lab"]["total_track_hits"] >= 1
+    assert (tmp_path / "zone_heatmap.png").exists()
 
 
 def test_pipeline_dispatch_logs_failure_when_endpoint_errors(
@@ -270,6 +284,14 @@ def test_pipeline_dispatch_logs_failure_when_endpoint_errors(
             "post_event_seconds": 0.0,
             "duplicate_suppression_seconds": 10.0,
             "clip_writer_queue_size": 4,
+            "zone_heatmap": {
+                "enabled": False,
+                "overlay_opacity": 0.35,
+                "point_radius": 10,
+                "decay": 0.99,
+                "output_image_path": str(tmp_path / "zone_heatmap.png"),
+                "output_summary_path": str(tmp_path / "zone_heatmap.json"),
+            },
         },
         "dashboard": {
             "enabled": True,

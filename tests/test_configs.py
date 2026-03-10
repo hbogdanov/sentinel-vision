@@ -19,8 +19,10 @@ def test_load_config_merges_defaults(tmp_path: Path) -> None:
     assert config["tracking"]["type"] == "bytetrack"
     assert config["tracking"]["max_age_frames"] == 30
     assert config["tracking"]["appearance_model"] == "mobilenet_v3_small"
+    assert config["tracking"]["trajectory_prediction_horizon"] == 3
     assert config["events"]["line_crossing"]["enabled"] is True
     assert config["events"]["after_hours_occupancy"]["timezone"] == "America/New_York"
+    assert config["output"]["zone_heatmap"]["enabled"] is False
 
 
 def test_load_config_rejects_invalid_zone_points(tmp_path: Path) -> None:
@@ -71,6 +73,17 @@ def test_load_config_rejects_negative_runtime_frame_skip(tmp_path: Path) -> None
     config_path = tmp_path / "config.yaml"
     config_path.write_text(
         "camera_id: cam_2\nzones: []\nruntime:\n  frame_skip: -1\n", encoding="utf-8"
+    )
+
+    with pytest.raises(ValidationError):
+        load_config(str(config_path))
+
+
+def test_load_config_rejects_invalid_zone_heatmap_decay(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "camera_id: cam_2\nzones: []\noutput:\n  zone_heatmap:\n    enabled: true\n    decay: 1.5\n",
+        encoding="utf-8",
     )
 
     with pytest.raises(ValidationError):
@@ -190,6 +203,14 @@ def test_expand_camera_configs_namespaces_outputs() -> None:
             "duplicate_suppression_seconds": 10.0,
             "clip_writer_queue_size": 4,
             "health_status_path": "data/outputs/camera_health.json",
+            "zone_heatmap": {
+                "enabled": False,
+                "overlay_opacity": 0.35,
+                "point_radius": 18,
+                "decay": 0.985,
+                "output_image_path": "data/outputs/zone_heatmap.png",
+                "output_summary_path": "data/outputs/zone_heatmap.json",
+            },
         },
         "dashboard": {"enabled": False, "endpoint": "", "timeout_seconds": 1.0},
         "zones": [],
@@ -213,6 +234,9 @@ def test_expand_camera_configs_namespaces_outputs() -> None:
     assert expanded[0]["camera_id"] == "north_gate"
     assert expanded[0]["output"]["alerts_dir"].endswith("alerts/north_gate")
     assert expanded[0]["output"]["log_path"].endswith("events_north_gate.jsonl")
+    assert expanded[0]["output"]["zone_heatmap"]["output_image_path"].endswith(
+        "zone_heatmap_north_gate.png"
+    )
     assert expanded[1]["output"]["annotated_video_path"].endswith(
         "annotated_south_gate.mp4"
     )

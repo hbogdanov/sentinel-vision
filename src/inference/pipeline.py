@@ -21,6 +21,7 @@ from src.events.wrong_way import WrongWayDetector
 from src.events.zones import line_zones, load_zones, polygon_zones
 from src.inference.detector import Detection, YoloDetector
 from src.inference.ground_plane import GroundPlaneMapper
+from src.inference.heatmap import ZoneOccupancyHeatmap
 from src.inference.motion import GlobalMotionCompensator
 from src.inference.tracker import Track, create_tracker
 from src.io.logger import EventLogger
@@ -140,6 +141,9 @@ class SentinelPipeline:
             clip_writer_queue_size=int(output_cfg.get("clip_writer_queue_size", 16)),
         )
         self.show_window = bool(output_cfg.get("show_window", False))
+        self.zone_heatmap = ZoneOccupancyHeatmap.from_config(
+            dict(output_cfg.get("zone_heatmap", {}))
+        )
         self.dashboard_cfg = config.get("dashboard", {"enabled": False})
         self.input_cfg = config["input"]
         self.runtime_cfg = config["runtime"]
@@ -250,6 +254,12 @@ class SentinelPipeline:
                 with stage_stats.measure("render"):
                     self._update_track_history(tracks)
                     dwell_timers = self._update_dwell_timers(tracks, timestamp)
+                    polygonal_zones = polygon_zones(self.zones)
+                    self.zone_heatmap.update(
+                        tracks=tracks,
+                        zones=polygonal_zones,
+                        frame_shape=frame.shape[:2],
+                    )
                     annotated = draw_frame(
                         frame=frame.copy(),
                         zones=self.zones,
@@ -258,6 +268,8 @@ class SentinelPipeline:
                         fps=fps_meter.tick(),
                         track_history=self._track_history,
                         dwell_timers=dwell_timers,
+                        zone_heatmap_overlay=self.zone_heatmap.build_overlay(),
+                        zone_heatmap_opacity=self.zone_heatmap.overlay_opacity,
                     )
                 self.recorder.write_annotated_frame(annotated)
 
@@ -281,6 +293,7 @@ class SentinelPipeline:
                 frame_index += 1
 
             self.recorder.close(fps=fps)
+            self.zone_heatmap.save()
             self.health_monitor.mark_offline()
             if self.show_window:
                 cv2.destroyAllWindows()

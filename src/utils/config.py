@@ -33,6 +33,10 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "appearance_weights_path": "",
         "appearance_device": "cpu",
         "appearance_input_size": 128,
+        "trajectory_prediction_enabled": True,
+        "trajectory_history_size": 6,
+        "trajectory_prediction_horizon": 3,
+        "trajectory_smoothing": 0.65,
     },
     "events": {
         "intrusion": {"enabled": True, "cooldown_seconds": 5},
@@ -105,6 +109,14 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "duplicate_suppression_seconds": 10,
         "clip_writer_queue_size": 16,
         "health_status_path": "data/outputs/camera_health.json",
+        "zone_heatmap": {
+            "enabled": False,
+            "overlay_opacity": 0.35,
+            "point_radius": 18,
+            "decay": 0.985,
+            "output_image_path": "data/outputs/zone_heatmap.png",
+            "output_summary_path": "data/outputs/zone_heatmap.json",
+        },
     },
     "dashboard": {"enabled": False, "endpoint": "", "timeout_seconds": 1.0},
     "zones": [],
@@ -182,4 +194,16 @@ def _namespace_output_paths(output: dict[str, Any], camera_id: str) -> dict[str,
         namespaced[key] = str(
             path.with_name(f"{stem}_{safe_camera_id}{suffix}")
         ).replace("\\", "/")
+    heatmap_cfg = namespaced.get("zone_heatmap")
+    if isinstance(heatmap_cfg, dict):
+        for key in ("output_image_path", "output_summary_path"):
+            raw = heatmap_cfg.get(key)
+            if not raw:
+                continue
+            path = Path(str(raw))
+            suffix = path.suffix
+            stem = path.stem
+            heatmap_cfg[key] = str(
+                path.with_name(f"{stem}_{safe_camera_id}{suffix}")
+            ).replace("\\", "/")
     return namespaced
