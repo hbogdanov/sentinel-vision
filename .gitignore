@@ -10,8 +10,11 @@ pytest_tmp_local/
 *.jpg
 *.png
 .DS_Store
+Ultralytics/
+data/external/
 data/outputs/*
 !data/outputs/.gitkeep
+!data/eval/videos/*.mp4
 demo/screenshots/*
 !demo/screenshots/.gitkeep
 models/*

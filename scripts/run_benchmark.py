@@ -226,6 +226,7 @@ def _load_evaluator_module():
     spec = importlib.util.spec_from_file_location("evaluate_events", script_path)
     module = importlib.util.module_from_spec(spec)
     assert spec is not None and spec.loader is not None
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 

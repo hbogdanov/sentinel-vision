@@ -190,6 +190,29 @@ python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json -
 python scripts/render_metrics_report.py --input-json data/eval/results/latest.json --output-html docs/results_dashboard.html
 ```
 
+## Public Dataset Subset
+
+The repo now includes a curated public-dataset tracking subset built from:
+
+- `MOT17-04-FRCNN`
+- `MOT17-09-FRCNN`
+- `VisDrone2019-MOT-train/uav0000099_02109_v`
+- `VisDrone2019-MOT-val/uav0000268_05773_v`
+
+Artifacts:
+
+- Manifest: [benchmark_manifest_public_datasets.json](data/eval/benchmark_manifest_public_datasets.json)
+- CPU results: [public_dataset_cpu.json](data/eval/results/public_dataset_cpu.json)
+- CPU report: [results_public_dataset_cpu.md](docs/results_public_dataset_cpu.md)
+- CPU dashboard: [results_public_dataset_cpu.html](docs/results_public_dataset_cpu.html)
+
+Important distinction:
+
+- Tracking metrics on this subset are real dataset-derived results.
+- Event metrics are currently false-alert-only stress numbers because MOT17 and VisDrone do not ship event-level ground truth for this repo’s rule-based events.
+
+Original datasets are not included in Git. Raw extractions live under `data/external/`, which is ignored by the repo.
+
 ## Camera Health
 
 The pipeline writes camera health status to the configured `output.health_status_path`. In the default single-camera config that is `data/outputs/camera_health.json`; in multi-camera mode each camera gets its own namespaced health file automatically.

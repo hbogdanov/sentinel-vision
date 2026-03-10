@@ -1,0 +1,53 @@
+{
+  "benchmark_name": "sentinel_vision_public_dataset_subset_v1",
+  "videos": [
+    {
+      "video_id": "mot17_04",
+      "video_path": "videos/mot17_04_clip.mp4",
+      "fps": 30,
+      "duration_seconds": 20.0,
+      "ground_truth": "annotations/mot17_04_tracking.json",
+      "predictions": "predictions_public/mot17_04.json",
+      "scene_types": ["street", "urban"],
+      "challenge_tags": ["crowd", "occlusion", "tracking"],
+      "subject_classes": ["person"],
+      "notes": "MOT17-04-FRCNN clip, frames 151-750, resized to 960px width."
+    },
+    {
+      "video_id": "mot17_09",
+      "video_path": "videos/mot17_09_clip.mp4",
+      "fps": 30,
+      "duration_seconds": 17.5,
+      "ground_truth": "annotations/mot17_09_tracking.json",
+      "predictions": "predictions_public/mot17_09.json",
+      "scene_types": ["street", "urban"],
+      "challenge_tags": ["crowd", "occlusion", "tracking"],
+      "subject_classes": ["person"],
+      "notes": "MOT17-09-FRCNN clip, full 525-frame sequence, resized to 960px width."
+    },
+    {
+      "video_id": "visdrone_uav0000099_02109",
+      "video_path": "videos/visdrone_uav0000099_02109_clip.mp4",
+      "fps": 30,
+      "duration_seconds": 20.0,
+      "ground_truth": "annotations/visdrone_uav0000099_02109_tracking.json",
+      "predictions": "predictions_public/visdrone_uav0000099_02109.json",
+      "scene_types": ["aerial", "traffic"],
+      "challenge_tags": ["moving_camera", "vehicle", "multi_class_tracking"],
+      "subject_classes": ["person", "car", "truck", "bus", "bicycle", "motorcycle"],
+      "notes": "VisDrone train sequence uav0000099_02109_v, frames 151-750, resized to 960px width."
+    },
+    {
+      "video_id": "visdrone_uav0000268_05773",
+      "video_path": "videos/visdrone_uav0000268_05773_clip.mp4",
+      "fps": 30,
+      "duration_seconds": 20.0,
+      "ground_truth": "annotations/visdrone_uav0000268_05773_tracking.json",
+      "predictions": "predictions_public/visdrone_uav0000268_05773.json",
+      "scene_types": ["aerial", "traffic"],
+      "challenge_tags": ["moving_camera", "vehicle", "multi_class_tracking"],
+      "subject_classes": ["person", "car", "truck", "bus", "bicycle", "motorcycle"],
+      "notes": "VisDrone val sequence uav0000268_05773_v, frames 1-600, resized to 960px width."
+    }
+  ]
+}
