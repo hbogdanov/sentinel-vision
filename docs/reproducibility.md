@@ -40,22 +40,22 @@ Those only apply when you run the live inference path below.
 From the repo root:
 
 ```bash
-python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
-python scripts/render_metrics_report.py --input-json data/eval/results/latest.json --output-html docs/results_dashboard.html
+python -m scripts.evaluate_events --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
+python -m scripts.render_metrics_report --input-json data/eval/results/latest.json --output-html docs/results_dashboard.html
 ```
 
 ### Live inference reproduction on CPU
 
 ```bash
-python scripts/run_benchmark.py --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cpu --model yolo11n.pt --predictions-dir data/eval/predictions_cpu --output-json data/eval/results/cpu_latest.json --output-markdown docs/results_cpu.md
-python scripts/render_metrics_report.py --input-json data/eval/results/cpu_latest.json --output-html docs/results_cpu.html
+python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cpu --model yolo11n.pt --predictions-dir data/eval/predictions_cpu --output-json data/eval/results/cpu_latest.json --output-markdown docs/results_cpu.md
+python -m scripts.render_metrics_report --input-json data/eval/results/cpu_latest.json --output-html docs/results_cpu.html
 ```
 
 ### Live inference reproduction on GPU
 
 ```bash
-python scripts/run_benchmark.py --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cuda:0 --model yolo11n.pt --predictions-dir data/eval/predictions_gpu --output-json data/eval/results/gpu_latest.json --output-markdown docs/results_gpu.md
-python scripts/render_metrics_report.py --input-json data/eval/results/gpu_latest.json --output-html docs/results_gpu.html
+python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cuda:0 --model yolo11n.pt --predictions-dir data/eval/predictions_gpu --output-json data/eval/results/gpu_latest.json --output-markdown docs/results_gpu.md
+python -m scripts.render_metrics_report --input-json data/eval/results/gpu_latest.json --output-html docs/results_gpu.html
 ```
 
 ## Model and config
@@ -107,7 +107,7 @@ Hardware:
 - OS: Windows 11
 
 Run settings:
-- Command: python scripts/run_benchmark.py --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cuda:0 --model yolo11n.pt
+- Command: python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cuda:0 --model yolo11n.pt
 - Config: configs/default.yaml
 - Manifest: data/eval/benchmark_manifest.json
 - Model: yolo11n.pt

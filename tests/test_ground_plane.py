@@ -1,5 +1,3 @@
-import numpy as np
-
 from src.inference.ground_plane import GroundPlaneMapper
 
 

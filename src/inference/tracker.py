@@ -36,8 +36,13 @@ class Track:
 
 
 class Tracker(Protocol):
-    def update(self, detections: list[Detection], frame_index: int, frame=None, motion_transform=None) -> list[Track]:
-        ...
+    def update(
+        self,
+        detections: list[Detection],
+        frame_index: int,
+        frame=None,
+        motion_transform=None,
+    ) -> list[Track]: ...
 
 
 @dataclass(slots=True)
@@ -56,7 +61,12 @@ class _TrackState:
     def predicted_bbox(self) -> tuple[float, float, float, float]:
         return tuple(coord + delta for coord, delta in zip(self.bbox, self.velocity))
 
-    def update(self, detection: Detection, frame_index: int, embedding: np.ndarray | None = None) -> None:
+    def update(
+        self,
+        detection: Detection,
+        frame_index: int,
+        embedding: np.ndarray | None = None,
+    ) -> None:
         self.velocity = tuple(new - old for new, old in zip(detection.bbox, self.bbox))
         self.bbox = detection.bbox
         self.label = detection.label
@@ -89,15 +99,26 @@ class _TrackState:
 
 
 class SimpleTracker:
-    def __init__(self, iou_threshold: float = 0.3, max_age_frames: int = 30, min_hits: int = 1) -> None:
+    def __init__(
+        self, iou_threshold: float = 0.3, max_age_frames: int = 30, min_hits: int = 1
+    ) -> None:
         self.iou_threshold = iou_threshold
         self.max_age_frames = max_age_frames
         self.min_hits = min_hits
         self._next_id = 1
         self._tracks: dict[int, Track] = {}
 
-    def update(self, detections: list[Detection], frame_index: int, frame=None, motion_transform=None) -> list[Track]:
-        compensated_boxes = [compensate_bbox(detection.bbox, motion_transform) for detection in detections]
+    def update(
+        self,
+        detections: list[Detection],
+        frame_index: int,
+        frame=None,
+        motion_transform=None,
+    ) -> list[Track]:
+        compensated_boxes = [
+            compensate_bbox(detection.bbox, motion_transform)
+            for detection in detections
+        ]
         matches, _, unmatched_detection_ids = self._match(detections, compensated_boxes)
 
         for track_id, det_idx in matches:
@@ -131,7 +152,8 @@ class SimpleTracker:
         visible_tracks = [
             track
             for track in self._tracks.values()
-            if frame_index - track.last_seen_frame <= self.max_age_frames and track.hits >= self.min_hits
+            if frame_index - track.last_seen_frame <= self.max_age_frames
+            and track.hits >= self.min_hits
         ]
         return sorted(visible_tracks, key=lambda track: track.track_id)
 
@@ -189,10 +211,21 @@ class ByteTracker:
         self._next_id = 1
         self._tracks: dict[int, _TrackState] = {}
 
-    def update(self, detections: list[Detection], frame_index: int, frame=None, motion_transform=None) -> list[Track]:
-        compensated_boxes = [compensate_bbox(detection.bbox, motion_transform) for detection in detections]
+    def update(
+        self,
+        detections: list[Detection],
+        frame_index: int,
+        frame=None,
+        motion_transform=None,
+    ) -> list[Track]:
+        compensated_boxes = [
+            compensate_bbox(detection.bbox, motion_transform)
+            for detection in detections
+        ]
         high_conf_ids = [
-            idx for idx, detection in enumerate(detections) if detection.score >= self.high_score_threshold
+            idx
+            for idx, detection in enumerate(detections)
+            if detection.score >= self.high_score_threshold
         ]
         low_conf_ids = [
             idx
@@ -200,8 +233,12 @@ class ByteTracker:
             if self.low_score_threshold <= detection.score < self.high_score_threshold
         ]
 
-        confirmed_ids = [track_id for track_id, track in self._tracks.items() if track.confirmed]
-        tentative_ids = [track_id for track_id, track in self._tracks.items() if not track.confirmed]
+        confirmed_ids = [
+            track_id for track_id, track in self._tracks.items() if track.confirmed
+        ]
+        tentative_ids = [
+            track_id for track_id, track in self._tracks.items() if not track.confirmed
+        ]
 
         matches, unmatched_confirmed, unmatched_high = self._match_tracks(
             track_ids=confirmed_ids,
@@ -268,7 +305,9 @@ class ByteTracker:
     ) -> None:
         for track_id, det_idx in matches:
             embedding = embeddings.get(det_idx) if embeddings else None
-            self._tracks[track_id].update(detections[det_idx], frame_index=frame_index, embedding=embedding)
+            self._tracks[track_id].update(
+                detections[det_idx], frame_index=frame_index, embedding=embedding
+            )
 
     def _match_tracks(
         self,
@@ -311,7 +350,11 @@ class ByteTracker:
         return matches, unmatched_track_ids, unmatched_detection_ids
 
     def _expire_stale_tracks(self) -> None:
-        expired = [track_id for track_id, track in self._tracks.items() if track.misses > self.max_age_frames]
+        expired = [
+            track_id
+            for track_id, track in self._tracks.items()
+            if track.misses > self.max_age_frames
+        ]
         for track_id in expired:
             del self._tracks[track_id]
 
@@ -346,11 +389,22 @@ class BoTSORTTracker(ByteTracker):
         self.appearance_weight = appearance_weight
         self.appearance_threshold = appearance_threshold
 
-    def update(self, detections: list[Detection], frame_index: int, frame=None, motion_transform=None) -> list[Track]:
+    def update(
+        self,
+        detections: list[Detection],
+        frame_index: int,
+        frame=None,
+        motion_transform=None,
+    ) -> list[Track]:
         embeddings = self._compute_embeddings(frame, detections)
-        compensated_boxes = [compensate_bbox(detection.bbox, motion_transform) for detection in detections]
+        compensated_boxes = [
+            compensate_bbox(detection.bbox, motion_transform)
+            for detection in detections
+        ]
         high_conf_ids = [
-            idx for idx, detection in enumerate(detections) if detection.score >= self.high_score_threshold
+            idx
+            for idx, detection in enumerate(detections)
+            if detection.score >= self.high_score_threshold
         ]
         low_conf_ids = [
             idx
@@ -358,8 +412,12 @@ class BoTSORTTracker(ByteTracker):
             if self.low_score_threshold <= detection.score < self.high_score_threshold
         ]
 
-        confirmed_ids = [track_id for track_id, track in self._tracks.items() if track.confirmed]
-        tentative_ids = [track_id for track_id, track in self._tracks.items() if not track.confirmed]
+        confirmed_ids = [
+            track_id for track_id, track in self._tracks.items() if track.confirmed
+        ]
+        tentative_ids = [
+            track_id for track_id, track in self._tracks.items() if not track.confirmed
+        ]
 
         matches, unmatched_confirmed, unmatched_high = self._match_tracks(
             track_ids=confirmed_ids,
@@ -379,7 +437,9 @@ class BoTSORTTracker(ByteTracker):
             threshold=self.secondary_match_iou_threshold,
             embeddings=embeddings,
         )
-        self._apply_matches(secondary_matches, detections, frame_index, embeddings=embeddings)
+        self._apply_matches(
+            secondary_matches, detections, frame_index, embeddings=embeddings
+        )
 
         tentative_matches, unmatched_tentative, unmatched_high = self._match_tracks(
             track_ids=tentative_ids,
@@ -389,7 +449,9 @@ class BoTSORTTracker(ByteTracker):
             threshold=self.match_iou_threshold,
             embeddings=embeddings,
         )
-        self._apply_matches(tentative_matches, detections, frame_index, embeddings=embeddings)
+        self._apply_matches(
+            tentative_matches, detections, frame_index, embeddings=embeddings
+        )
 
         for track_id in list(still_unmatched_confirmed | unmatched_tentative):
             track = self._tracks.get(track_id)
@@ -445,10 +507,14 @@ class BoTSORTTracker(ByteTracker):
                 if detection.label != track.label:
                     continue
                 iou = _iou(predicted_bbox, compensated_boxes[det_idx])
-                appearance_score = _cosine_similarity(track.embedding, embeddings.get(det_idx) if embeddings else None)
+                appearance_score = _cosine_similarity(
+                    track.embedding, embeddings.get(det_idx) if embeddings else None
+                )
                 if iou < threshold and appearance_score < self.appearance_threshold:
                     continue
-                score = (1.0 - self.appearance_weight) * iou + self.appearance_weight * appearance_score
+                score = (
+                    1.0 - self.appearance_weight
+                ) * iou + self.appearance_weight * appearance_score
                 candidates.append((score, track_id, det_idx))
 
         candidates.sort(reverse=True)
@@ -465,7 +531,9 @@ class BoTSORTTracker(ByteTracker):
 
         return matches, unmatched_track_ids, unmatched_detection_ids
 
-    def _compute_embeddings(self, frame, detections: list[Detection]) -> dict[int, np.ndarray]:
+    def _compute_embeddings(
+        self, frame, detections: list[Detection]
+    ) -> dict[int, np.ndarray]:
         if frame is None:
             return {}
 
@@ -481,7 +549,11 @@ class BoTSORTTracker(ByteTracker):
             if crop.size == 0:
                 continue
             hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-            hist = cv2.calcHist([hsv], [0, 1], None, [8, 8], [0, 180, 0, 256]).flatten().astype(np.float32)
+            hist = (
+                cv2.calcHist([hsv], [0, 1], None, [8, 8], [0, 180, 0, 256])
+                .flatten()
+                .astype(np.float32)
+            )
             norm = np.linalg.norm(hist)
             if norm > 0:
                 hist /= norm
@@ -498,7 +570,9 @@ def create_tracker(config: dict) -> Tracker:
 
     if tracker_type == "simple":
         return SimpleTracker(
-            iou_threshold=float(config.get("iou_threshold", config.get("match_iou_threshold", 0.3))),
+            iou_threshold=float(
+                config.get("iou_threshold", config.get("match_iou_threshold", 0.3))
+            ),
             max_age_frames=common["max_age_frames"],
             min_hits=common["min_hits"],
         )
@@ -507,9 +581,13 @@ def create_tracker(config: dict) -> Tracker:
         return BoTSORTTracker(
             high_score_threshold=float(config.get("high_score_threshold", 0.5)),
             low_score_threshold=float(config.get("low_score_threshold", 0.1)),
-            new_track_score_threshold=float(config.get("new_track_score_threshold", 0.6)),
+            new_track_score_threshold=float(
+                config.get("new_track_score_threshold", 0.6)
+            ),
             match_iou_threshold=float(config.get("match_iou_threshold", 0.3)),
-            secondary_match_iou_threshold=float(config.get("secondary_match_iou_threshold", 0.15)),
+            secondary_match_iou_threshold=float(
+                config.get("secondary_match_iou_threshold", 0.15)
+            ),
             max_age_frames=common["max_age_frames"],
             min_hits=common["min_hits"],
             appearance_weight=float(config.get("appearance_weight", 0.35)),
@@ -521,7 +599,9 @@ def create_tracker(config: dict) -> Tracker:
         low_score_threshold=float(config.get("low_score_threshold", 0.1)),
         new_track_score_threshold=float(config.get("new_track_score_threshold", 0.6)),
         match_iou_threshold=float(config.get("match_iou_threshold", 0.3)),
-        secondary_match_iou_threshold=float(config.get("secondary_match_iou_threshold", 0.15)),
+        secondary_match_iou_threshold=float(
+            config.get("secondary_match_iou_threshold", 0.15)
+        ),
         max_age_frames=common["max_age_frames"],
         min_hits=common["min_hits"],
     )
@@ -536,7 +616,9 @@ def _cosine_similarity(a: np.ndarray | None, b: np.ndarray | None) -> float:
     return max(0.0, float(np.dot(a, b) / denominator))
 
 
-def _iou(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
+def _iou(
+    a: tuple[float, float, float, float], b: tuple[float, float, float, float]
+) -> float:
     ax1, ay1, ax2, ay2 = a
     bx1, by1, bx2, by2 = b
 

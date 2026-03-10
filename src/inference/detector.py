@@ -23,7 +23,9 @@ class YoloDetector:
         try:
             from ultralytics import YOLO
         except ImportError as exc:
-            raise RuntimeError("Ultralytics is required for detection. Install dependencies first.") from exc
+            raise RuntimeError(
+                "Ultralytics is required for detection. Install dependencies first."
+            ) from exc
 
         self.model = YOLO(model_path)
         self.confidence = confidence
@@ -32,7 +34,9 @@ class YoloDetector:
         self.names = self.model.names
 
     def detect(self, frame) -> list[Detection]:
-        results = self.model.predict(frame, conf=self.confidence, device=self.device, verbose=False)
+        results = self.model.predict(
+            frame, conf=self.confidence, device=self.device, verbose=False
+        )
         detections: list[Detection] = []
         for result in results:
             boxes = result.boxes

@@ -55,16 +55,25 @@ class _FakeDetector:
         return result
 
 
-def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(tmp_path: Path, monkeypatch) -> None:
+def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(
+    tmp_path: Path, monkeypatch
+) -> None:
     frames = [np.zeros((120, 160, 3), dtype=np.uint8) for _ in range(3)]
     fake_source = _FakeVideoSource(frames)
 
-    monkeypatch.setattr(pipeline_module, "open_video_source", lambda source: fake_source)
+    monkeypatch.setattr(
+        pipeline_module, "open_video_source", lambda source: fake_source
+    )
     monkeypatch.setattr(pipeline_module, "YoloDetector", _FakeDetector)
 
     config = {
         "camera_id": "cam_test",
-        "model": {"path": "fake.pt", "confidence": 0.3, "device": "cpu", "classes": ["person"]},
+        "model": {
+            "path": "fake.pt",
+            "confidence": 0.3,
+            "device": "cpu",
+            "classes": ["person"],
+        },
         "tracking": {
             "type": "bytetrack",
             "high_score_threshold": 0.5,
@@ -79,8 +88,16 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(tmp_path: Path, mon
         },
         "events": {
             "intrusion": {"enabled": True, "cooldown_seconds": 5},
-            "loitering": {"enabled": False, "threshold_seconds": 10, "cooldown_seconds": 20},
-            "line_crossing": {"enabled": False, "cooldown_seconds": 3, "direction": "any"},
+            "loitering": {
+                "enabled": False,
+                "threshold_seconds": 10,
+                "cooldown_seconds": 20,
+            },
+            "line_crossing": {
+                "enabled": False,
+                "cooldown_seconds": 3,
+                "direction": "any",
+            },
             "wrong_way": {
                 "enabled": False,
                 "cooldown_seconds": 10,
@@ -95,7 +112,11 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(tmp_path: Path, mon
                 "timezone": "America/New_York",
                 "target_classes": ["person"],
             },
-            "vehicle_in_pedestrian_zone": {"enabled": False, "cooldown_seconds": 5, "target_classes": ["car"]},
+            "vehicle_in_pedestrian_zone": {
+                "enabled": False,
+                "cooldown_seconds": 5,
+                "target_classes": ["car"],
+            },
             "abandoned_object": {
                 "enabled": False,
                 "cooldown_seconds": 30,
@@ -107,7 +128,12 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(tmp_path: Path, mon
                 "owner_classes": ["person"],
             },
         },
-        "input": {"source": "fake", "read_failure_threshold": 1, "reconnect_attempts": 0, "reconnect_backoff_seconds": 0.0},
+        "input": {
+            "source": "fake",
+            "read_failure_threshold": 1,
+            "reconnect_attempts": 0,
+            "reconnect_backoff_seconds": 0.0,
+        },
         "runtime": {
             "frame_skip": 0,
             "adaptive_frame_skip": False,
@@ -144,17 +170,28 @@ def test_pipeline_runs_synthetic_sequence_and_logs_intrusion(tmp_path: Path, mon
 
     log_path = Path(config["output"]["log_path"])
     assert log_path.exists()
-    events = [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    events = [
+        json.loads(line)
+        for line in log_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
     assert len(events) == 1
     assert events[0]["event_type"] == "intrusion"
     assert events[0]["camera_id"] == "cam_test"
 
 
-def test_pipeline_dispatch_logs_failure_when_endpoint_errors(tmp_path: Path, monkeypatch, caplog) -> None:
+def test_pipeline_dispatch_logs_failure_when_endpoint_errors(
+    tmp_path: Path, monkeypatch, caplog
+) -> None:
     monkeypatch.setattr(pipeline_module, "YoloDetector", _FakeDetector)
     config = {
         "camera_id": "cam_test",
-        "model": {"path": "fake.pt", "confidence": 0.3, "device": "cpu", "classes": ["person"]},
+        "model": {
+            "path": "fake.pt",
+            "confidence": 0.3,
+            "device": "cpu",
+            "classes": ["person"],
+        },
         "tracking": {
             "type": "bytetrack",
             "high_score_threshold": 0.5,
@@ -169,9 +206,22 @@ def test_pipeline_dispatch_logs_failure_when_endpoint_errors(tmp_path: Path, mon
         },
         "events": {
             "intrusion": {"enabled": True, "cooldown_seconds": 5},
-            "loitering": {"enabled": False, "threshold_seconds": 10, "cooldown_seconds": 20},
-            "line_crossing": {"enabled": False, "cooldown_seconds": 3, "direction": "any"},
-            "wrong_way": {"enabled": False, "cooldown_seconds": 10, "min_displacement_pixels": 25, "target_classes": ["person"]},
+            "loitering": {
+                "enabled": False,
+                "threshold_seconds": 10,
+                "cooldown_seconds": 20,
+            },
+            "line_crossing": {
+                "enabled": False,
+                "cooldown_seconds": 3,
+                "direction": "any",
+            },
+            "wrong_way": {
+                "enabled": False,
+                "cooldown_seconds": 10,
+                "min_displacement_pixels": 25,
+                "target_classes": ["person"],
+            },
             "after_hours_occupancy": {
                 "enabled": False,
                 "cooldown_seconds": 60,
@@ -180,7 +230,11 @@ def test_pipeline_dispatch_logs_failure_when_endpoint_errors(tmp_path: Path, mon
                 "timezone": "America/New_York",
                 "target_classes": ["person"],
             },
-            "vehicle_in_pedestrian_zone": {"enabled": False, "cooldown_seconds": 5, "target_classes": ["car"]},
+            "vehicle_in_pedestrian_zone": {
+                "enabled": False,
+                "cooldown_seconds": 5,
+                "target_classes": ["car"],
+            },
             "abandoned_object": {
                 "enabled": False,
                 "cooldown_seconds": 30,
@@ -192,7 +246,12 @@ def test_pipeline_dispatch_logs_failure_when_endpoint_errors(tmp_path: Path, mon
                 "owner_classes": ["person"],
             },
         },
-        "input": {"source": "fake", "read_failure_threshold": 1, "reconnect_attempts": 0, "reconnect_backoff_seconds": 0.0},
+        "input": {
+            "source": "fake",
+            "read_failure_threshold": 1,
+            "reconnect_attempts": 0,
+            "reconnect_backoff_seconds": 0.0,
+        },
         "runtime": {
             "frame_skip": 0,
             "adaptive_frame_skip": False,
@@ -212,7 +271,11 @@ def test_pipeline_dispatch_logs_failure_when_endpoint_errors(tmp_path: Path, mon
             "duplicate_suppression_seconds": 10.0,
             "clip_writer_queue_size": 4,
         },
-        "dashboard": {"enabled": True, "endpoint": "http://127.0.0.1:9999/ingest", "timeout_seconds": 0.1},
+        "dashboard": {
+            "enabled": True,
+            "endpoint": "http://127.0.0.1:9999/ingest",
+            "timeout_seconds": 0.1,
+        },
         "zones": [],
     }
     pipeline = SentinelPipeline(config)

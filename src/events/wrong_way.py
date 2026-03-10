@@ -43,19 +43,27 @@ class WrongWayDetector:
                 continue
             direction_vector = _direction_vector(expected_direction)
             for track in tracks:
-                if track.label not in self.target_classes or not zone.contains_track(track):
+                if track.label not in self.target_classes or not zone.contains_track(
+                    track
+                ):
                     continue
                 key = (zone.name, track.track_id)
                 active_keys.add(key)
                 current_point = track.reasoning_point
                 origin = self._entry_centers.setdefault(key, current_point)
-                displacement = (current_point[0] - origin[0], current_point[1] - origin[1])
+                displacement = (
+                    current_point[0] - origin[0],
+                    current_point[1] - origin[1],
+                )
                 if _vector_norm(displacement) < self.min_displacement_pixels:
                     continue
                 if _dot_product(displacement, direction_vector) >= 0:
                     continue
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
                 self._counter += 1
                 self._last_event_ts[key] = timestamp
@@ -81,7 +89,9 @@ class WrongWayDetector:
         return events
 
 
-def _direction_vector(value: str | list[float] | tuple[float, float]) -> tuple[float, float]:
+def _direction_vector(
+    value: str | list[float] | tuple[float, float],
+) -> tuple[float, float]:
     if isinstance(value, (list, tuple)) and len(value) == 2:
         return float(value[0]), float(value[1])
     lookup = {

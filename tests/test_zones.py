@@ -1,4 +1,10 @@
-from src.events.zones import LineZone, PolygonZone, line_zones, load_zones, polygon_zones
+from src.events.zones import (
+    LineZone,
+    PolygonZone,
+    line_zones,
+    load_zones,
+    polygon_zones,
+)
 
 
 def test_zone_contains_center_point() -> None:
@@ -19,8 +25,18 @@ def test_zone_accepts_point_on_edge() -> None:
 def test_load_zones_supports_polygon_and_line_tags() -> None:
     zones = load_zones(
         [
-            {"name": "restricted_lab", "type": "polygon", "tags": ["restricted"], "points": [[0, 0], [10, 0], [10, 10]]},
-            {"name": "tripwire", "type": "line", "tags": ["line_crossing"], "points": [[0, 5], [10, 5]]},
+            {
+                "name": "restricted_lab",
+                "type": "polygon",
+                "tags": ["restricted"],
+                "points": [[0, 0], [10, 0], [10, 10]],
+            },
+            {
+                "name": "tripwire",
+                "type": "line",
+                "tags": ["line_crossing"],
+                "points": [[0, 5], [10, 5]],
+            },
         ]
     )
 

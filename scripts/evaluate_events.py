@@ -52,7 +52,9 @@ class VideoBundle:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Evaluate detection, tracking, and event quality on labeled clips.")
+    parser = argparse.ArgumentParser(
+        description="Evaluate detection, tracking, and event quality on labeled clips."
+    )
     parser.add_argument(
         "--manifest",
         default="data/eval/benchmark_manifest.json",
@@ -82,7 +84,9 @@ def main() -> None:
     manifest_path = Path(args.manifest)
     manifest = _load_json(manifest_path)
     base_dir = manifest_path.parent
-    bundles = [_load_video_bundle(base_dir, video_spec) for video_spec in manifest["videos"]]
+    bundles = [
+        _load_video_bundle(base_dir, video_spec) for video_spec in manifest["videos"]
+    ]
     results = evaluate_manifest(bundles, iou_threshold=args.iou_threshold)
 
     output_json_path = Path(args.output_json)
@@ -97,9 +101,13 @@ def main() -> None:
     print(json.dumps(results["summary"], indent=2))
 
 
-def evaluate_manifest(bundles: list[VideoBundle], iou_threshold: float = 0.5) -> dict[str, Any]:
+def evaluate_manifest(
+    bundles: list[VideoBundle], iou_threshold: float = 0.5
+) -> dict[str, Any]:
     per_video: list[dict[str, Any]] = []
-    aggregate_detection: dict[str, dict[str, int]] = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
+    aggregate_detection: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"tp": 0, "fp": 0, "fn": 0}
+    )
     aggregate_tracking: dict[str, float | int] = {
         "gt_count": 0,
         "pred_count": 0,
@@ -118,9 +126,18 @@ def evaluate_manifest(bundles: list[VideoBundle], iou_threshold: float = 0.5) ->
     total_duration_seconds = 0.0
 
     for bundle in bundles:
-        detection_metrics = evaluate_detections(bundle.gt_detections, bundle.pred_detections, iou_threshold=iou_threshold)
-        tracking_metrics = evaluate_tracking(bundle.gt_detections, bundle.pred_detections, iou_threshold=iou_threshold)
-        event_metrics = evaluate_events(bundle.gt_events, bundle.pred_events, fps=bundle.fps, duration_seconds=bundle.duration_seconds)
+        detection_metrics = evaluate_detections(
+            bundle.gt_detections, bundle.pred_detections, iou_threshold=iou_threshold
+        )
+        tracking_metrics = evaluate_tracking(
+            bundle.gt_detections, bundle.pred_detections, iou_threshold=iou_threshold
+        )
+        event_metrics = evaluate_events(
+            bundle.gt_events,
+            bundle.pred_events,
+            fps=bundle.fps,
+            duration_seconds=bundle.duration_seconds,
+        )
 
         total_duration_seconds += bundle.duration_seconds
         per_video.append(
@@ -149,7 +166,9 @@ def evaluate_manifest(bundles: list[VideoBundle], iou_threshold: float = 0.5) ->
             aggregate_event[event_type]["fp"] += counts["fp"]
             aggregate_event[event_type]["fn"] += counts["fn"]
             aggregate_event[event_type]["latencies"].extend(counts["latencies"])
-            aggregate_event[event_type]["latency_errors"].extend(counts["latency_errors"])
+            aggregate_event[event_type]["latency_errors"].extend(
+                counts["latency_errors"]
+            )
 
     detection_summary = {
         label: _counts_to_metrics(counts["tp"], counts["fp"], counts["fn"]) | counts
@@ -165,8 +184,16 @@ def evaluate_manifest(bundles: list[VideoBundle], iou_threshold: float = 0.5) ->
         "tp": sum(item["tp"] for item in aggregate_event.values()),
         "fp": sum(item["fp"] for item in aggregate_event.values()),
         "fn": sum(item["fn"] for item in aggregate_event.values()),
-        "latencies": [latency for item in aggregate_event.values() for latency in item["latencies"]],
-        "latency_errors": [error for item in aggregate_event.values() for error in item["latency_errors"]],
+        "latencies": [
+            latency
+            for item in aggregate_event.values()
+            for latency in item["latencies"]
+        ],
+        "latency_errors": [
+            error
+            for item in aggregate_event.values()
+            for error in item["latency_errors"]
+        ],
     }
 
     summary = {
@@ -176,7 +203,9 @@ def evaluate_manifest(bundles: list[VideoBundle], iou_threshold: float = 0.5) ->
         "detection_by_class": detection_summary,
         "tracking": tracking_summary,
         "events_by_type": event_summary,
-        "events_overall": _event_counts_to_metrics(overall_event_counts, total_duration_seconds),
+        "events_overall": _event_counts_to_metrics(
+            overall_event_counts, total_duration_seconds
+        ),
     }
     runtime_by_device = _runtime_summary(bundles)
     if runtime_by_device:
@@ -191,7 +220,9 @@ def evaluate_detections(
 ) -> dict[str, Any]:
     gt_by_frame = _group_by_frame(gt_detections)
     pred_by_frame = _group_by_frame(pred_detections)
-    counts_by_class: dict[str, dict[str, int]] = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
+    counts_by_class: dict[str, dict[str, int]] = defaultdict(
+        lambda: {"tp": 0, "fp": 0, "fn": 0}
+    )
 
     for frame_index in sorted(set(gt_by_frame) | set(pred_by_frame)):
         matches, unmatched_gt, unmatched_pred = match_detections(
@@ -276,9 +307,16 @@ def evaluate_events(
 
     counts_by_type: dict[str, dict[str, Any]] = {}
     for event_type in sorted(set(grouped_gt) | set(grouped_pred)):
-        matches, unmatched_gt, unmatched_pred = match_events(grouped_gt.get(event_type, []), grouped_pred.get(event_type, []))
-        latencies = [round((pred.frame_index - gt.entry_frame_index) / fps, 4) for gt, pred in matches]
-        latency_errors = [round((pred.frame_index - gt.frame_index) / fps, 4) for gt, pred in matches]
+        matches, unmatched_gt, unmatched_pred = match_events(
+            grouped_gt.get(event_type, []), grouped_pred.get(event_type, [])
+        )
+        latencies = [
+            round((pred.frame_index - gt.entry_frame_index) / fps, 4)
+            for gt, pred in matches
+        ]
+        latency_errors = [
+            round((pred.frame_index - gt.frame_index) / fps, 4) for gt, pred in matches
+        ]
         counts = {
             "tp": len(matches),
             "fp": len(unmatched_pred),
@@ -286,7 +324,9 @@ def evaluate_events(
             "latencies": latencies,
             "latency_errors": latency_errors,
         }
-        counts_by_type[event_type] = _event_counts_to_metrics(counts, duration_seconds) | counts
+        counts_by_type[event_type] = (
+            _event_counts_to_metrics(counts, duration_seconds) | counts
+        )
 
     return {"counts_by_type": counts_by_type}
 
@@ -295,7 +335,11 @@ def match_detections(
     gt_items: list[DetectionRecord],
     pred_items: list[DetectionRecord],
     iou_threshold: float,
-) -> tuple[list[tuple[DetectionRecord, DetectionRecord]], list[DetectionRecord], list[DetectionRecord]]:
+) -> tuple[
+    list[tuple[DetectionRecord, DetectionRecord]],
+    list[DetectionRecord],
+    list[DetectionRecord],
+]:
     candidates: list[tuple[float, int, int]] = []
     for gt_idx, gt_item in enumerate(gt_items):
         for pred_idx, pred_item in enumerate(pred_items):
@@ -316,7 +360,9 @@ def match_detections(
         used_pred.add(pred_idx)
 
     unmatched_gt = [item for idx, item in enumerate(gt_items) if idx not in used_gt]
-    unmatched_pred = [item for idx, item in enumerate(pred_items) if idx not in used_pred]
+    unmatched_pred = [
+        item for idx, item in enumerate(pred_items) if idx not in used_pred
+    ]
     return matches, unmatched_gt, unmatched_pred
 
 
@@ -345,7 +391,9 @@ def match_events(
         used_pred.add(pred_idx)
 
     unmatched_gt = [item for idx, item in enumerate(gt_events) if idx not in used_gt]
-    unmatched_pred = [item for idx, item in enumerate(pred_events) if idx not in used_pred]
+    unmatched_pred = [
+        item for idx, item in enumerate(pred_events) if idx not in used_pred
+    ]
     return matches, unmatched_gt, unmatched_pred
 
 
@@ -460,20 +508,32 @@ def _counts_to_metrics(tp: int, fp: int, fn: int) -> dict[str, float]:
     return {"precision": round(precision, 4), "recall": round(recall, 4)}
 
 
-def _tracking_counts_to_metrics(counts: dict[str, float | int]) -> dict[str, float | int]:
+def _tracking_counts_to_metrics(
+    counts: dict[str, float | int],
+) -> dict[str, float | int]:
     gt_count = int(counts["gt_count"])
     pred_count = int(counts["pred_count"])
     matched_count = int(counts["matched_count"])
     idtp = int(counts["idtp"])
     idfp = int(counts["idfp"])
     idfn = int(counts["idfn"])
-    mota = 1.0 - ((int(counts["fn"]) + int(counts["fp"]) + int(counts["id_switches"])) / gt_count) if gt_count else 0.0
+    mota = (
+        1.0
+        - (
+            (int(counts["fn"]) + int(counts["fp"]) + int(counts["id_switches"]))
+            / gt_count
+        )
+        if gt_count
+        else 0.0
+    )
     motp = (float(counts["matched_iou_sum"]) / matched_count) if matched_count else 0.0
     precision = matched_count / pred_count if pred_count else 0.0
     recall = matched_count / gt_count if gt_count else 0.0
     id_precision = idtp / (idtp + idfp) if (idtp + idfp) else 0.0
     id_recall = idtp / (idtp + idfn) if (idtp + idfn) else 0.0
-    idf1 = (2 * idtp) / ((2 * idtp) + idfp + idfn) if ((2 * idtp) + idfp + idfn) else 0.0
+    idf1 = (
+        (2 * idtp) / ((2 * idtp) + idfp + idfn) if ((2 * idtp) + idfp + idfn) else 0.0
+    )
     return {
         "mota": round(mota, 4),
         "motp": round(motp, 4),
@@ -494,13 +554,30 @@ def _tracking_counts_to_metrics(counts: dict[str, float | int]) -> dict[str, flo
     }
 
 
-def _event_counts_to_metrics(counts: dict[str, Any], duration_seconds: float) -> dict[str, float | int]:
-    precision = counts["tp"] / (counts["tp"] + counts["fp"]) if (counts["tp"] + counts["fp"]) else 0.0
-    recall = counts["tp"] / (counts["tp"] + counts["fn"]) if (counts["tp"] + counts["fn"]) else 0.0
-    false_alerts_per_minute = counts["fp"] / (duration_seconds / 60.0) if duration_seconds else 0.0
-    mean_latency = sum(counts["latencies"]) / len(counts["latencies"]) if counts["latencies"] else 0.0
+def _event_counts_to_metrics(
+    counts: dict[str, Any], duration_seconds: float
+) -> dict[str, float | int]:
+    precision = (
+        counts["tp"] / (counts["tp"] + counts["fp"])
+        if (counts["tp"] + counts["fp"])
+        else 0.0
+    )
+    recall = (
+        counts["tp"] / (counts["tp"] + counts["fn"])
+        if (counts["tp"] + counts["fn"])
+        else 0.0
+    )
+    false_alerts_per_minute = (
+        counts["fp"] / (duration_seconds / 60.0) if duration_seconds else 0.0
+    )
+    mean_latency = (
+        sum(counts["latencies"]) / len(counts["latencies"])
+        if counts["latencies"]
+        else 0.0
+    )
     mean_latency_error = (
-        sum(abs(value) for value in counts["latency_errors"]) / len(counts["latency_errors"])
+        sum(abs(value) for value in counts["latency_errors"])
+        / len(counts["latency_errors"])
         if counts["latency_errors"]
         else 0.0
     )
@@ -519,9 +596,16 @@ def _event_counts_to_metrics(counts: dict[str, Any], duration_seconds: float) ->
 def _load_video_bundle(base_dir: Path, video_spec: dict[str, Any]) -> VideoBundle:
     gt_payload = _load_json(base_dir / video_spec["ground_truth"])
     pred_payload = _load_json(base_dir / video_spec["predictions"])
-    fps = float(video_spec.get("fps", gt_payload.get("fps", pred_payload.get("fps", 30.0))))
+    fps = float(
+        video_spec.get("fps", gt_payload.get("fps", pred_payload.get("fps", 30.0)))
+    )
     duration_seconds = float(
-        video_spec.get("duration_seconds", gt_payload.get("duration_seconds", pred_payload.get("duration_seconds", 0.0)))
+        video_spec.get(
+            "duration_seconds",
+            gt_payload.get(
+                "duration_seconds", pred_payload.get("duration_seconds", 0.0)
+            ),
+        )
     )
     metadata = {
         "scene_types": list(video_spec.get("scene_types", [])),
@@ -563,7 +647,11 @@ def _load_events(items: list[dict[str, Any]]) -> list[EventRecord]:
             label=str(item["class"]),
             frame_index=int(item["frame_index"]),
             entry_frame_index=int(item.get("entry_frame_index", item["frame_index"])),
-            track_id=int(item["track_id"]) if "track_id" in item and item["track_id"] is not None else None,
+            track_id=(
+                int(item["track_id"])
+                if "track_id" in item and item["track_id"] is not None
+                else None
+            ),
             confidence=float(item["confidence"]) if "confidence" in item else None,
             match_tolerance_frames=int(item.get("match_tolerance_frames", 15)),
         )
@@ -579,7 +667,10 @@ def _load_runtime(payload: dict[str, Any] | None) -> RuntimeRecord | None:
         frames_processed=int(payload.get("frames_processed", 0)),
         wall_clock_seconds=float(payload.get("wall_clock_seconds", 0.0)),
         effective_fps=float(payload.get("effective_fps", 0.0)),
-        stage_total_seconds={str(key): float(value) for key, value in dict(payload.get("stage_total_seconds", {})).items()},
+        stage_total_seconds={
+            str(key): float(value)
+            for key, value in dict(payload.get("stage_total_seconds", {})).items()
+        },
     )
 
 
@@ -591,7 +682,10 @@ def _runtime_to_dict(runtime: RuntimeRecord | None) -> dict[str, Any] | None:
         "frames_processed": runtime.frames_processed,
         "wall_clock_seconds": round(runtime.wall_clock_seconds, 4),
         "effective_fps": round(runtime.effective_fps, 4),
-        "stage_total_seconds": {stage: round(value, 6) for stage, value in runtime.stage_total_seconds.items()},
+        "stage_total_seconds": {
+            stage: round(value, 6)
+            for stage, value in runtime.stage_total_seconds.items()
+        },
     }
 
 
@@ -601,8 +695,12 @@ def _coverage_summary(bundles: list[VideoBundle]) -> dict[str, Any]:
     subject_classes: set[str] = set()
     for bundle in bundles:
         scene_types.update(str(item) for item in bundle.metadata.get("scene_types", []))
-        challenge_tags.update(str(item) for item in bundle.metadata.get("challenge_tags", []))
-        subject_classes.update(str(item) for item in bundle.metadata.get("subject_classes", []))
+        challenge_tags.update(
+            str(item) for item in bundle.metadata.get("challenge_tags", [])
+        )
+        subject_classes.update(
+            str(item) for item in bundle.metadata.get("subject_classes", [])
+        )
     return {
         "scene_types": sorted(scene_types),
         "challenge_tags": sorted(challenge_tags),
@@ -611,7 +709,14 @@ def _coverage_summary(bundles: list[VideoBundle]) -> dict[str, Any]:
 
 
 def _runtime_summary(bundles: list[VideoBundle]) -> dict[str, Any]:
-    grouped: dict[str, dict[str, Any]] = defaultdict(lambda: {"videos": 0, "frames_processed": 0, "wall_clock_seconds": 0.0, "stage_total_seconds": defaultdict(float)})
+    grouped: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {
+            "videos": 0,
+            "frames_processed": 0,
+            "wall_clock_seconds": 0.0,
+            "stage_total_seconds": defaultdict(float),
+        }
+    )
     for bundle in bundles:
         if bundle.runtime is None:
             continue
@@ -630,7 +735,11 @@ def _runtime_summary(bundles: list[VideoBundle]) -> dict[str, Any]:
             "videos": int(metrics["videos"]),
             "frames_processed": frames_processed,
             "wall_clock_seconds": round(wall_clock_seconds, 4),
-            "effective_fps": round(frames_processed / wall_clock_seconds, 4) if wall_clock_seconds else 0.0,
+            "effective_fps": (
+                round(frames_processed / wall_clock_seconds, 4)
+                if wall_clock_seconds
+                else 0.0
+            ),
             "stage_average_ms": {
                 stage: round((value / max(frames_processed, 1)) * 1000.0, 4)
                 for stage, value in sorted(dict(metrics["stage_total_seconds"]).items())
@@ -643,7 +752,9 @@ def _identity_true_positives(pair_counts: dict[tuple[int, int], int]) -> int:
     assigned_gt: set[int] = set()
     assigned_pred: set[int] = set()
     idtp = 0
-    for (gt_track_id, pred_track_id), overlap_count in sorted(pair_counts.items(), key=lambda item: item[1], reverse=True):
+    for (gt_track_id, pred_track_id), overlap_count in sorted(
+        pair_counts.items(), key=lambda item: item[1], reverse=True
+    ):
         if gt_track_id in assigned_gt or pred_track_id in assigned_pred:
             continue
         assigned_gt.add(gt_track_id)
@@ -657,7 +768,9 @@ def _load_json(path: Path) -> dict[str, Any]:
         return json.load(handle)
 
 
-def iou(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> float:
+def iou(
+    a: tuple[float, float, float, float], b: tuple[float, float, float, float]
+) -> float:
     ax1, ay1, ax2, ay2 = a
     bx1, by1, bx2, by2 = b
 

@@ -69,7 +69,9 @@ class GlobalMotionCompensator:
             self._previous_gray = current_gray
             return GlobalMotionResult.identity(method=self.method)
 
-        current_points, status, _ = cv2.calcOpticalFlowPyrLK(self._previous_gray, current_gray, previous_points, None)
+        current_points, status, _ = cv2.calcOpticalFlowPyrLK(
+            self._previous_gray, current_gray, previous_points, None
+        )
         if current_points is None or status is None:
             self._previous_gray = current_gray
             return GlobalMotionResult.identity(method=self.method)
@@ -101,7 +103,9 @@ class GlobalMotionCompensator:
     def _store_frame(self, frame: np.ndarray) -> None:
         self._previous_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    def _estimate_transform(self, source_points: np.ndarray, target_points: np.ndarray) -> np.ndarray | None:
+    def _estimate_transform(
+        self, source_points: np.ndarray, target_points: np.ndarray
+    ) -> np.ndarray | None:
         if self.method == "homography":
             matrix, _ = cv2.findHomography(
                 source_points,
@@ -128,7 +132,9 @@ class GlobalMotionCompensator:
             self._smoothed_matrix = matrix
             return matrix
         alpha = float(np.clip(self.smoothing_factor, 0.0, 1.0))
-        self._smoothed_matrix = (alpha * self._smoothed_matrix) + ((1.0 - alpha) * matrix)
+        self._smoothed_matrix = (alpha * self._smoothed_matrix) + (
+            (1.0 - alpha) * matrix
+        )
         return self._smoothed_matrix.astype(np.float32)
 
 
@@ -140,7 +146,9 @@ def compensate_bbox(
         return bbox
 
     x1, y1, x2, y2 = bbox
-    corners = np.array([[[x1, y1]], [[x2, y1]], [[x2, y2]], [[x1, y2]]], dtype=np.float32)
+    corners = np.array(
+        [[[x1, y1]], [[x2, y1]], [[x2, y2]], [[x1, y2]]], dtype=np.float32
+    )
     if motion_transform.shape == (2, 3):
         transformed = cv2.transform(corners, motion_transform)
     elif motion_transform.shape == (3, 3):

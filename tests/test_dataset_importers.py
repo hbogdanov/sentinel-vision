@@ -41,11 +41,19 @@ def test_import_mot17_filters_visibility_and_rebases_frames(tmp_path: Path) -> N
 
     assert payload["fps"] == 30.0
     assert payload["detections"] == [
-        {"frame_index": 0, "track_id": 1, "class": "person", "bbox": [10.0, 20.0, 40.0, 60.0], "score": 0.9}
+        {
+            "frame_index": 0,
+            "track_id": 1,
+            "class": "person",
+            "bbox": [10.0, 20.0, 40.0, 60.0],
+            "score": 0.9,
+        }
     ]
 
 
-def test_import_visdrone_maps_supported_classes_and_rebases_frames(tmp_path: Path) -> None:
+def test_import_visdrone_maps_supported_classes_and_rebases_frames(
+    tmp_path: Path,
+) -> None:
     module = _load_module("import_visdrone_mot", "scripts/import_visdrone_mot.py")
     gt_path = tmp_path / "clip.txt"
     gt_path.write_text(
@@ -70,6 +78,18 @@ def test_import_visdrone_maps_supported_classes_and_rebases_frames(tmp_path: Pat
 
     assert payload["fps"] == 25.0
     assert payload["detections"] == [
-        {"frame_index": 0, "track_id": 1, "class": "car", "bbox": [10.0, 20.0, 40.0, 60.0], "score": 1.0},
-        {"frame_index": 1, "track_id": 2, "class": "bus", "bbox": [50.0, 60.0, 70.0, 90.0], "score": 1.0},
+        {
+            "frame_index": 0,
+            "track_id": 1,
+            "class": "car",
+            "bbox": [10.0, 20.0, 40.0, 60.0],
+            "score": 1.0,
+        },
+        {
+            "frame_index": 1,
+            "track_id": 2,
+            "class": "bus",
+            "bbox": [50.0, 60.0, 70.0, 90.0],
+            "score": 1.0,
+        },
     ]

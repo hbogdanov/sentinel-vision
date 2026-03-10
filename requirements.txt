@@ -9,4 +9,3 @@ shapely>=2.0
 streamlit>=1.44
 ultralytics>=8.3
 uvicorn>=0.34
-pytest>=8.3

@@ -39,7 +39,10 @@ class IntrusionDetector:
                     continue
 
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
 
                 self._counter += 1

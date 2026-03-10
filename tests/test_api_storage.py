@@ -33,10 +33,19 @@ def test_sqlite_alert_store_persists_and_filters_alerts(tmp_path: Path) -> None:
 
     assert store.count() == 2
     assert store.get_alert("evt_1")["camera_id"] == "cam_a"
-    assert [item["event_id"] for item in store.list_alerts(camera_id="cam_b")] == ["evt_2"]
-    assert [item["event_id"] for item in store.list_alerts(event_type="intrusion")] == ["evt_1"]
-    assert [item["event_id"] for item in store.list_alerts(zone="restricted_lab")] == ["evt_1"]
-    assert [item["event_id"] for item in store.list_alerts(start_time="2026-03-09T10:30:00Z")] == ["evt_2"]
+    assert [item["event_id"] for item in store.list_alerts(camera_id="cam_b")] == [
+        "evt_2"
+    ]
+    assert [item["event_id"] for item in store.list_alerts(event_type="intrusion")] == [
+        "evt_1"
+    ]
+    assert [item["event_id"] for item in store.list_alerts(zone="restricted_lab")] == [
+        "evt_1"
+    ]
+    assert [
+        item["event_id"]
+        for item in store.list_alerts(start_time="2026-03-09T10:30:00Z")
+    ] == ["evt_2"]
 
     stats = store.stats()
     assert stats["total_alerts"] == 2

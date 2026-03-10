@@ -8,7 +8,9 @@ from src.utils.config import expand_camera_configs, load_config, merge_config_ov
 
 def test_load_config_merges_defaults(tmp_path: Path) -> None:
     config_path = tmp_path / "config.yaml"
-    config_path.write_text("camera_id: cam_2\nzones: []\nmodel:\n  confidence: 0.5\n", encoding="utf-8")
+    config_path.write_text(
+        "camera_id: cam_2\nzones: []\nmodel:\n  confidence: 0.5\n", encoding="utf-8"
+    )
 
     config = load_config(str(config_path))
 
@@ -33,7 +35,10 @@ def test_load_config_rejects_invalid_zone_points(tmp_path: Path) -> None:
 
 def test_load_config_rejects_unsupported_classes(tmp_path: Path) -> None:
     config_path = tmp_path / "config.yaml"
-    config_path.write_text("camera_id: cam_2\nzones: []\nmodel:\n  classes:\n    - person\n    - toaster\n", encoding="utf-8")
+    config_path.write_text(
+        "camera_id: cam_2\nzones: []\nmodel:\n  classes:\n    - person\n    - toaster\n",
+        encoding="utf-8",
+    )
 
     with pytest.raises(ValidationError):
         load_config(str(config_path))
@@ -52,7 +57,9 @@ def test_load_config_rejects_invalid_dashboard_url(tmp_path: Path) -> None:
 
 def test_load_config_rejects_negative_runtime_frame_skip(tmp_path: Path) -> None:
     config_path = tmp_path / "config.yaml"
-    config_path.write_text("camera_id: cam_2\nzones: []\nruntime:\n  frame_skip: -1\n", encoding="utf-8")
+    config_path.write_text(
+        "camera_id: cam_2\nzones: []\nruntime:\n  frame_skip: -1\n", encoding="utf-8"
+    )
 
     with pytest.raises(ValidationError):
         load_config(str(config_path))
@@ -69,7 +76,9 @@ def test_load_config_rejects_invalid_motion_compensation_method(tmp_path: Path) 
         load_config(str(config_path))
 
 
-def test_load_config_rejects_incomplete_perspective_correspondences(tmp_path: Path) -> None:
+def test_load_config_rejects_incomplete_perspective_correspondences(
+    tmp_path: Path,
+) -> None:
     config_path = tmp_path / "config.yaml"
     config_path.write_text(
         "camera_id: cam_2\nzones: []\nperspective:\n  enabled: true\n  image_points: [[0, 0], [1, 0], [1, 1]]\n  world_points: [[0, 0], [1, 0], [1, 1]]\n",
@@ -83,13 +92,31 @@ def test_load_config_rejects_incomplete_perspective_correspondences(tmp_path: Pa
 def test_expand_camera_configs_namespaces_outputs() -> None:
     config = {
         "camera_id": "base_cam",
-        "model": {"path": "fake.pt", "confidence": 0.3, "device": "cpu", "classes": ["person"]},
+        "model": {
+            "path": "fake.pt",
+            "confidence": 0.3,
+            "device": "cpu",
+            "classes": ["person"],
+        },
         "tracking": {"type": "bytetrack", "max_age_frames": 30, "min_hits": 2},
         "events": {
             "intrusion": {"enabled": True, "cooldown_seconds": 5},
-            "loitering": {"enabled": True, "threshold_seconds": 10, "cooldown_seconds": 20},
-            "line_crossing": {"enabled": True, "cooldown_seconds": 3, "direction": "any"},
-            "wrong_way": {"enabled": True, "cooldown_seconds": 10, "min_displacement_pixels": 25, "target_classes": ["person"]},
+            "loitering": {
+                "enabled": True,
+                "threshold_seconds": 10,
+                "cooldown_seconds": 20,
+            },
+            "line_crossing": {
+                "enabled": True,
+                "cooldown_seconds": 3,
+                "direction": "any",
+            },
+            "wrong_way": {
+                "enabled": True,
+                "cooldown_seconds": 10,
+                "min_displacement_pixels": 25,
+                "target_classes": ["person"],
+            },
             "after_hours_occupancy": {
                 "enabled": True,
                 "cooldown_seconds": 60,
@@ -98,7 +125,11 @@ def test_expand_camera_configs_namespaces_outputs() -> None:
                 "timezone": "America/New_York",
                 "target_classes": ["person"],
             },
-            "vehicle_in_pedestrian_zone": {"enabled": True, "cooldown_seconds": 5, "target_classes": ["car"]},
+            "vehicle_in_pedestrian_zone": {
+                "enabled": True,
+                "cooldown_seconds": 5,
+                "target_classes": ["car"],
+            },
             "abandoned_object": {
                 "enabled": True,
                 "cooldown_seconds": 30,
@@ -110,8 +141,31 @@ def test_expand_camera_configs_namespaces_outputs() -> None:
                 "owner_classes": ["person"],
             },
         },
-        "input": {"source": 0, "read_failure_threshold": 30, "reconnect_attempts": 3, "reconnect_backoff_seconds": 1.0},
-        "runtime": {"frame_skip": 0, "adaptive_frame_skip": False, "target_processing_fps": 10.0, "resize_width": 0, "resize_height": 0, "timing_log_interval_frames": 120, "motion_compensation": {"enabled": False, "static_camera_assumption": True, "method": "affine", "max_corners": 300, "quality_level": 0.01, "min_distance": 8.0, "min_matches": 12, "ransac_threshold": 3.0, "smoothing_factor": 0.8}},
+        "input": {
+            "source": 0,
+            "read_failure_threshold": 30,
+            "reconnect_attempts": 3,
+            "reconnect_backoff_seconds": 1.0,
+        },
+        "runtime": {
+            "frame_skip": 0,
+            "adaptive_frame_skip": False,
+            "target_processing_fps": 10.0,
+            "resize_width": 0,
+            "resize_height": 0,
+            "timing_log_interval_frames": 120,
+            "motion_compensation": {
+                "enabled": False,
+                "static_camera_assumption": True,
+                "method": "affine",
+                "max_corners": 300,
+                "quality_level": 0.01,
+                "min_distance": 8.0,
+                "min_matches": 12,
+                "ransac_threshold": 3.0,
+                "smoothing_factor": 0.8,
+            },
+        },
         "perspective": {"enabled": False, "image_points": [], "world_points": []},
         "output": {
             "show_window": False,
@@ -128,8 +182,16 @@ def test_expand_camera_configs_namespaces_outputs() -> None:
         "dashboard": {"enabled": False, "endpoint": "", "timeout_seconds": 1.0},
         "zones": [],
         "cameras": [
-            {"camera_id": "north_gate", "input": {"source": "rtsp://north"}, "zones": []},
-            {"camera_id": "south_gate", "input": {"source": "rtsp://south"}, "zones": []},
+            {
+                "camera_id": "north_gate",
+                "input": {"source": "rtsp://north"},
+                "zones": [],
+            },
+            {
+                "camera_id": "south_gate",
+                "input": {"source": "rtsp://south"},
+                "zones": [],
+            },
         ],
     }
 
@@ -139,7 +201,9 @@ def test_expand_camera_configs_namespaces_outputs() -> None:
     assert expanded[0]["camera_id"] == "north_gate"
     assert expanded[0]["output"]["alerts_dir"].endswith("alerts/north_gate")
     assert expanded[0]["output"]["log_path"].endswith("events_north_gate.jsonl")
-    assert expanded[1]["output"]["annotated_video_path"].endswith("annotated_south_gate.mp4")
+    assert expanded[1]["output"]["annotated_video_path"].endswith(
+        "annotated_south_gate.mp4"
+    )
 
 
 def test_merge_config_overlay_applies_runtime_profile() -> None:

@@ -30,7 +30,9 @@ class RollingTimingStats:
             yield
         finally:
             elapsed = time.perf_counter() - start
-            bucket = self._values.setdefault(stage, deque(maxlen=max(1, self.window_size)))
+            bucket = self._values.setdefault(
+                stage, deque(maxlen=max(1, self.window_size))
+            )
             bucket.append(elapsed)
 
     def summary_ms(self) -> dict[str, float]:

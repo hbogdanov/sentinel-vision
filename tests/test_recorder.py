@@ -26,18 +26,28 @@ def test_recorder_writes_pre_and_post_event_clip_with_metadata(tmp_path: Path) -
 
     event = {
         "event_id": "evt_000001",
-        "timestamp": datetime(2026, 3, 9, tzinfo=timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime(2026, 3, 9, tzinfo=timezone.utc)
+        .isoformat()
+        .replace("+00:00", "Z"),
         "event_type": "intrusion",
         "track_id": 7,
         "zone": "restricted_lab",
     }
-    snapshot_path, clip_path, metadata_path = recorder.start_alert(event=event, frame=frames[2], fps=fps)
+    snapshot_path, clip_path, metadata_path = recorder.start_alert(
+        event=event, frame=frames[2], fps=fps
+    )
     recorder.ingest_frame(frames[3], fps=fps)
     recorder.ingest_frame(frames[4], fps=fps)
     recorder.close(fps=fps)
 
-    assert snapshot_path is not None and clip_path is not None and metadata_path is not None
-    assert Path(snapshot_path).name.startswith("20260309T000000Z_intrusion_restricted_lab_track7_evt_000001")
+    assert (
+        snapshot_path is not None
+        and clip_path is not None
+        and metadata_path is not None
+    )
+    assert Path(snapshot_path).name.startswith(
+        "20260309T000000Z_intrusion_restricted_lab_track7_evt_000001"
+    )
     assert Path(snapshot_path).exists()
     assert Path(clip_path).exists()
     assert Path(metadata_path).exists()
@@ -46,8 +56,14 @@ def test_recorder_writes_pre_and_post_event_clip_with_metadata(tmp_path: Path) -
     assert metadata["pre_event_seconds"] == 1.0
     assert metadata["post_event_seconds"] == 1.0
     assert metadata["clip_frame_count"] == 5
-    assert Path(clip_path).name == "20260309T000000Z_intrusion_restricted_lab_track7_evt_000001.mp4"
-    assert Path(metadata_path).name == "20260309T000000Z_intrusion_restricted_lab_track7_evt_000001.json"
+    assert (
+        Path(clip_path).name
+        == "20260309T000000Z_intrusion_restricted_lab_track7_evt_000001.mp4"
+    )
+    assert (
+        Path(metadata_path).name
+        == "20260309T000000Z_intrusion_restricted_lab_track7_evt_000001.json"
+    )
 
     capture = cv2.VideoCapture(clip_path)
     frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -55,7 +71,9 @@ def test_recorder_writes_pre_and_post_event_clip_with_metadata(tmp_path: Path) -
     assert frame_count == 5
 
 
-def test_recorder_suppresses_duplicate_alerts_for_same_event_track_and_zone(tmp_path: Path) -> None:
+def test_recorder_suppresses_duplicate_alerts_for_same_event_track_and_zone(
+    tmp_path: Path,
+) -> None:
     recorder = AlertRecorder(
         alerts_dir=str(tmp_path),
         annotated_video_path=None,
@@ -78,7 +96,9 @@ def test_recorder_suppresses_duplicate_alerts_for_same_event_track_and_zone(tmp_
     }
     duplicate_event = {
         "event_id": "evt_000002",
-        "timestamp": (base_time + timedelta(seconds=5)).isoformat().replace("+00:00", "Z"),
+        "timestamp": (base_time + timedelta(seconds=5))
+        .isoformat()
+        .replace("+00:00", "Z"),
         "event_type": "intrusion",
         "track_id": 3,
         "zone": "restricted_lab",
@@ -92,7 +112,9 @@ def test_recorder_suppresses_duplicate_alerts_for_same_event_track_and_zone(tmp_
     assert duplicate_paths == (None, None, None)
 
 
-def test_recorder_falls_back_to_safe_fps_when_input_fps_is_invalid(tmp_path: Path) -> None:
+def test_recorder_falls_back_to_safe_fps_when_input_fps_is_invalid(
+    tmp_path: Path,
+) -> None:
     recorder = AlertRecorder(
         alerts_dir=str(tmp_path),
         annotated_video_path=None,
@@ -105,13 +127,17 @@ def test_recorder_falls_back_to_safe_fps_when_input_fps_is_invalid(tmp_path: Pat
     recorder.ingest_frame(frame, fps=0.0)
     event = {
         "event_id": "evt_000003",
-        "timestamp": datetime(2026, 3, 9, tzinfo=timezone.utc).isoformat().replace("+00:00", "Z"),
+        "timestamp": datetime(2026, 3, 9, tzinfo=timezone.utc)
+        .isoformat()
+        .replace("+00:00", "Z"),
         "event_type": "intrusion",
         "track_id": 9,
         "zone": "restricted_lab",
     }
 
-    _, clip_path, metadata_path = recorder.start_alert(event=event, frame=frame, fps=0.0)
+    _, clip_path, metadata_path = recorder.start_alert(
+        event=event, frame=frame, fps=0.0
+    )
     recorder.close(fps=0.0)
 
     metadata = json.loads(Path(metadata_path).read_text(encoding="utf-8"))

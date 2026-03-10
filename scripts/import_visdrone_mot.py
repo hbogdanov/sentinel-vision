@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 VISDRONE_CLASS_MAP = {
     1: "person",
     2: "person",
@@ -19,14 +18,38 @@ VISDRONE_CLASS_MAP = {
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Convert VisDrone MOT annotations into Sentinel Vision annotation JSON.")
+    parser = argparse.ArgumentParser(
+        description="Convert VisDrone MOT annotations into Sentinel Vision annotation JSON."
+    )
     parser.add_argument("--gt", required=True, help="Path to VisDrone annotation txt")
     parser.add_argument("--out", required=True, help="Output annotation JSON path")
-    parser.add_argument("--fps", type=float, default=30.0, help="Frame rate to store in the output payload")
-    parser.add_argument("--start-frame", type=int, default=1, help="1-based start frame for the clip window")
-    parser.add_argument("--end-frame", type=int, default=None, help="1-based end frame, inclusive")
-    parser.add_argument("--scale-x", type=float, default=1.0, help="Optional x scaling factor for bbox export")
-    parser.add_argument("--scale-y", type=float, default=1.0, help="Optional y scaling factor for bbox export")
+    parser.add_argument(
+        "--fps",
+        type=float,
+        default=30.0,
+        help="Frame rate to store in the output payload",
+    )
+    parser.add_argument(
+        "--start-frame",
+        type=int,
+        default=1,
+        help="1-based start frame for the clip window",
+    )
+    parser.add_argument(
+        "--end-frame", type=int, default=None, help="1-based end frame, inclusive"
+    )
+    parser.add_argument(
+        "--scale-x",
+        type=float,
+        default=1.0,
+        help="Optional x scaling factor for bbox export",
+    )
+    parser.add_argument(
+        "--scale-y",
+        type=float,
+        default=1.0,
+        help="Optional y scaling factor for bbox export",
+    )
     return parser
 
 
@@ -64,7 +87,9 @@ def convert_visdrone_annotations(
             line = raw_line.strip()
             if not line:
                 continue
-            frame_id, track_id, left, top, width, height, score, category_id = _parse_visdrone_line(line)
+            frame_id, track_id, left, top, width, height, score, category_id = (
+                _parse_visdrone_line(line)
+            )
             if frame_id < start_frame or frame_id > clip_end_frame:
                 continue
             label = VISDRONE_CLASS_MAP.get(category_id)
@@ -85,7 +110,11 @@ def convert_visdrone_annotations(
                 }
             )
 
-    duration_seconds = ((max((item["frame_index"] for item in detections), default=-1) + 1) / fps) if detections else 0.0
+    duration_seconds = (
+        ((max((item["frame_index"] for item in detections), default=-1) + 1) / fps)
+        if detections
+        else 0.0
+    )
     return {
         "video_id": video_id,
         "fps": round(fps, 4),
@@ -95,7 +124,9 @@ def convert_visdrone_annotations(
     }
 
 
-def _parse_visdrone_line(line: str) -> tuple[int, int, float, float, float, float, float, int]:
+def _parse_visdrone_line(
+    line: str,
+) -> tuple[int, int, float, float, float, float, float, int]:
     parts = [item.strip() for item in line.split(",")]
     return (
         int(parts[0]),

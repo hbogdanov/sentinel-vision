@@ -1,35 +1,65 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
-import sys
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
+from scripts import evaluate_events as evaluator
 from src.inference.pipeline import SentinelPipeline
 from src.io.video import open_video_source
 from src.utils.config import load_config, load_yaml_config, merge_config_overlay
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run Sentinel Vision inference over a benchmark manifest and score it.")
-    parser.add_argument("--manifest", default="data/eval/benchmark_manifest.json", help="Benchmark manifest path.")
-    parser.add_argument("--config", default="configs/default.yaml", help="Default config path used when a video entry does not override it.")
-    parser.add_argument("--profile", default=None, help="Optional default config profile name or YAML path.")
-    parser.add_argument("--device", default=None, help="Override inference device, for example cpu or cuda:0.")
+    parser = argparse.ArgumentParser(
+        description="Run Sentinel Vision inference over a benchmark manifest and score it."
+    )
+    parser.add_argument(
+        "--manifest",
+        default="data/eval/benchmark_manifest.json",
+        help="Benchmark manifest path.",
+    )
+    parser.add_argument(
+        "--config",
+        default="configs/default.yaml",
+        help="Default config path used when a video entry does not override it.",
+    )
+    parser.add_argument(
+        "--profile",
+        default=None,
+        help="Optional default config profile name or YAML path.",
+    )
+    parser.add_argument(
+        "--device",
+        default=None,
+        help="Override inference device, for example cpu or cuda:0.",
+    )
     parser.add_argument("--model", default=None, help="Override model path.")
-    parser.add_argument("--predictions-dir", default="data/eval/predictions", help="Directory for generated prediction JSON files.")
-    parser.add_argument("--output-json", default="data/eval/results/latest.json", help="Evaluation output JSON.")
-    parser.add_argument("--output-markdown", default="docs/results.md", help="Optional markdown summary path.")
-    parser.add_argument("--iou-threshold", type=float, default=0.5, help="IoU threshold used during evaluation.")
+    parser.add_argument(
+        "--predictions-dir",
+        default="data/eval/predictions",
+        help="Directory for generated prediction JSON files.",
+    )
+    parser.add_argument(
+        "--output-json",
+        default="data/eval/results/latest.json",
+        help="Evaluation output JSON.",
+    )
+    parser.add_argument(
+        "--output-markdown",
+        default="docs/results.md",
+        help="Optional markdown summary path.",
+    )
+    parser.add_argument(
+        "--iou-threshold",
+        type=float,
+        default=0.5,
+        help="IoU threshold used during evaluation.",
+    )
     return parser
 
 
@@ -52,10 +82,14 @@ def main() -> None:
             model_path=args.model,
         )
         prediction_path.write_text(json.dumps(generated, indent=2), encoding="utf-8")
-        video_spec["predictions"] = str(prediction_path.relative_to(base_dir)).replace("\\", "/")
+        video_spec["predictions"] = str(prediction_path.relative_to(base_dir)).replace(
+            "\\", "/"
+        )
 
-    evaluator = _load_evaluator_module()
-    bundles = [evaluator._load_video_bundle(base_dir, video_spec) for video_spec in manifest["videos"]]
+    bundles = [
+        evaluator._load_video_bundle(base_dir, video_spec)
+        for video_spec in manifest["videos"]
+    ]
     results = evaluator.evaluate_manifest(bundles, iou_threshold=args.iou_threshold)
 
     output_json_path = Path(args.output_json)
@@ -65,7 +99,9 @@ def main() -> None:
     if args.output_markdown:
         output_markdown_path = Path(args.output_markdown)
         output_markdown_path.parent.mkdir(parents=True, exist_ok=True)
-        output_markdown_path.write_text(evaluator.render_markdown(results), encoding="utf-8")
+        output_markdown_path.write_text(
+            evaluator.render_markdown(results), encoding="utf-8"
+        )
 
     print(json.dumps(results["summary"], indent=2))
 
@@ -116,7 +152,9 @@ def run_video_benchmark(
 
             detect_started = time.perf_counter()
             raw_detections = pipeline.detector.detect(inference_frame)
-            raw_detections = pipeline._scale_detections_to_frame(raw_detections, inference_frame, frame)
+            raw_detections = pipeline._scale_detections_to_frame(
+                raw_detections, inference_frame, frame
+            )
             stage_total_seconds["detect"] += time.perf_counter() - detect_started
 
             track_started = time.perf_counter()
@@ -124,14 +162,20 @@ def run_video_benchmark(
                 raw_detections,
                 frame_index=frame_index,
                 frame=frame,
-                motion_transform=motion_result.matrix if motion_result.estimated else None,
+                motion_transform=(
+                    motion_result.matrix if motion_result.estimated else None
+                ),
             )
             pipeline._project_tracks_to_ground_plane(tracks)
             stage_total_seconds["track"] += time.perf_counter() - track_started
 
-            timestamp = benchmark_start + timedelta(seconds=frame_index / max(fps, 1e-6))
+            timestamp = benchmark_start + timedelta(
+                seconds=frame_index / max(fps, 1e-6)
+            )
             events_started = time.perf_counter()
-            current_events = pipeline._evaluate_events(tracks, frame_index, timestamp, fps)
+            current_events = pipeline._evaluate_events(
+                tracks, frame_index, timestamp, fps
+            )
             stage_total_seconds["events"] += time.perf_counter() - events_started
 
             for track in tracks:
@@ -151,17 +195,29 @@ def run_video_benchmark(
                         "event_type": str(event["event_type"]),
                         "zone": str(event["zone"]),
                         "class": str(event["class"]),
-                        "track_id": int(event["track_id"]) if event.get("track_id") is not None else None,
-                        "entry_frame_index": int(event.get("entry_frame_index", event["frame_index"])),
+                        "track_id": (
+                            int(event["track_id"])
+                            if event.get("track_id") is not None
+                            else None
+                        ),
+                        "entry_frame_index": int(
+                            event.get("entry_frame_index", event["frame_index"])
+                        ),
                         "frame_index": int(event["frame_index"]),
-                        "confidence": round(float(event.get("confidence", 0.0)), 4) if event.get("confidence") is not None else None,
+                        "confidence": (
+                            round(float(event.get("confidence", 0.0)), 4)
+                            if event.get("confidence") is not None
+                            else None
+                        ),
                     }
                 )
 
             frame_index += 1
 
     wall_clock_seconds = time.perf_counter() - wall_clock_start
-    duration_seconds = float(video_spec.get("duration_seconds", 0.0)) or (frames_processed / max(fps, 1e-6))
+    duration_seconds = float(video_spec.get("duration_seconds", 0.0)) or (
+        frames_processed / max(fps, 1e-6)
+    )
     return {
         "video_id": str(video_spec["video_id"]),
         "fps": round(fps, 4),
@@ -172,8 +228,15 @@ def run_video_benchmark(
             "device": str(device or pipeline.config["model"].get("device", "cpu")),
             "frames_processed": frames_processed,
             "wall_clock_seconds": round(wall_clock_seconds, 6),
-            "effective_fps": round(frames_processed / wall_clock_seconds, 4) if wall_clock_seconds else 0.0,
-            "stage_total_seconds": {stage: round(value, 6) for stage, value in sorted(stage_total_seconds.items())},
+            "effective_fps": (
+                round(frames_processed / wall_clock_seconds, 4)
+                if wall_clock_seconds
+                else 0.0
+            ),
+            "stage_total_seconds": {
+                stage: round(value, 6)
+                for stage, value in sorted(stage_total_seconds.items())
+            },
         },
     }
 
@@ -187,7 +250,11 @@ def _build_pipeline(
     device: str | None,
     model_path: str | None,
 ) -> SentinelPipeline:
-    config_path = base_dir / video_spec["config"] if "config" in video_spec else default_config_path
+    config_path = (
+        base_dir / video_spec["config"]
+        if "config" in video_spec
+        else default_config_path
+    )
     config = load_config(str(config_path))
 
     profile = str(video_spec.get("profile", default_profile or "")).strip()
@@ -219,16 +286,6 @@ def _resolve_profile_path(profile: str) -> Path:
     if profile_path.exists():
         return profile_path
     raise FileNotFoundError(f"Could not resolve config profile '{profile}'.")
-
-
-def _load_evaluator_module():
-    script_path = Path(__file__).with_name("evaluate_events.py")
-    spec = importlib.util.spec_from_file_location("evaluate_events", script_path)
-    module = importlib.util.module_from_spec(spec)
-    assert spec is not None and spec.loader is not None
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
 
 
 def _load_json(path: Path) -> dict[str, Any]:

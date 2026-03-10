@@ -28,14 +28,24 @@ class PolygonZone:
             raise ValueError(f"Zone '{self.name}' is invalid.")
         if self.world_points:
             if len(self.world_points) < 3:
-                raise ValueError(f"Zone '{self.name}' world polygon must have at least 3 points.")
-            self._world_polygon = Polygon(self.world_points) if Polygon is not None else None
+                raise ValueError(
+                    f"Zone '{self.name}' world polygon must have at least 3 points."
+                )
+            self._world_polygon = (
+                Polygon(self.world_points) if Polygon is not None else None
+            )
             if self._world_polygon is not None and not self._world_polygon.is_valid:
                 raise ValueError(f"Zone '{self.name}' world polygon is invalid.")
 
     def contains_point(self, point: tuple[float, float], space: str = "image") -> bool:
-        polygon = self._world_polygon if space == "world" and self._world_polygon is not None else self._polygon
-        points = self.world_points if space == "world" and self.world_points else self.points
+        polygon = (
+            self._world_polygon
+            if space == "world" and self._world_polygon is not None
+            else self._polygon
+        )
+        points = (
+            self.world_points if space == "world" and self.world_points else self.points
+        )
         if polygon is not None and Point is not None:
             point_geom = Point(point)
             return polygon.contains(point_geom) or polygon.touches(point_geom)
@@ -92,15 +102,27 @@ def load_zones(zone_configs: Iterable[dict]) -> list[Zone]:
         if zone_type == "line":
             points = [tuple(point) for point in cfg["points"]]
             if len(points) != 2:
-                raise ValueError(f"Line zone '{cfg['name']}' must have exactly 2 points.")
-            zones.append(LineZone(name=cfg["name"], start=points[0], end=points[1], tags=tags, metadata=metadata))
+                raise ValueError(
+                    f"Line zone '{cfg['name']}' must have exactly 2 points."
+                )
+            zones.append(
+                LineZone(
+                    name=cfg["name"],
+                    start=points[0],
+                    end=points[1],
+                    tags=tags,
+                    metadata=metadata,
+                )
+            )
             continue
         world_points = cfg.get("world_points")
         zones.append(
             PolygonZone(
                 name=cfg["name"],
                 points=[tuple(point) for point in cfg["points"]],
-                world_points=[tuple(point) for point in world_points] if world_points else None,
+                world_points=(
+                    [tuple(point) for point in world_points] if world_points else None
+                ),
                 tags=tags,
                 metadata=metadata,
             )
@@ -122,7 +144,9 @@ def line_zones(zones: Iterable[Zone], tag: str | None = None) -> list[LineZone]:
     return filtered
 
 
-def _point_in_polygon(point: tuple[float, float], polygon: list[tuple[float, float]]) -> bool:
+def _point_in_polygon(
+    point: tuple[float, float], polygon: list[tuple[float, float]]
+) -> bool:
     x, y = point
     inside = False
     n = len(polygon)
@@ -131,7 +155,9 @@ def _point_in_polygon(point: tuple[float, float], polygon: list[tuple[float, flo
         x2, y2 = polygon[(idx + 1) % n]
         if _point_on_segment(point, (x1, y1), (x2, y2)):
             return True
-        intersects = ((y1 > y) != (y2 > y)) and (x < (x2 - x1) * (y - y1) / ((y2 - y1) or 1e-9) + x1)
+        intersects = ((y1 > y) != (y2 > y)) and (
+            x < (x2 - x1) * (y - y1) / ((y2 - y1) or 1e-9) + x1
+        )
         if intersects:
             inside = not inside
     return inside

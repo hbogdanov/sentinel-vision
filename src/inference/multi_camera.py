@@ -6,7 +6,6 @@ from typing import Any
 
 from src.inference.pipeline import SentinelPipeline
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -19,7 +18,9 @@ class MultiCameraRunner:
             SentinelPipeline(self.camera_configs[0]).run()
             return
 
-        with ThreadPoolExecutor(max_workers=len(self.camera_configs), thread_name_prefix="camera") as executor:
+        with ThreadPoolExecutor(
+            max_workers=len(self.camera_configs), thread_name_prefix="camera"
+        ) as executor:
             futures = []
             for camera_config in self.camera_configs:
                 LOGGER.info(

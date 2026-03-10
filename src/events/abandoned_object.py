@@ -26,9 +26,13 @@ class AbandonedObjectDetector:
         self.min_stationary_seconds = min_stationary_seconds
         self.stationary_radius_pixels = stationary_radius_pixels
         self.owner_max_distance_pixels = owner_max_distance_pixels
-        self.target_classes = set(target_classes or ["backpack", "suitcase", "handbag", "bicycle"])
+        self.target_classes = set(
+            target_classes or ["backpack", "suitcase", "handbag", "bicycle"]
+        )
         self.owner_classes = set(owner_classes or ["person"])
-        self._anchor_state: dict[tuple[str, int], tuple[tuple[float, float], datetime]] = {}
+        self._anchor_state: dict[
+            tuple[str, int], tuple[tuple[float, float], datetime]
+        ] = {}
         self._unattended_since: dict[tuple[str, int], datetime] = {}
         self._last_event_ts: dict[tuple[str, int], datetime] = {}
         self._counter = 0
@@ -51,7 +55,9 @@ class AbandonedObjectDetector:
 
         for zone in zones:
             for track in tracks:
-                if track.label not in self.target_classes or not zone.contains_track(track):
+                if track.label not in self.target_classes or not zone.contains_track(
+                    track
+                ):
                     continue
 
                 key = (zone.name, track.track_id)
@@ -62,7 +68,10 @@ class AbandonedObjectDetector:
                     continue
 
                 nearest_owner_distance = _nearest_owner_distance(track, owner_tracks)
-                if nearest_owner_distance is None or nearest_owner_distance > self.owner_max_distance_pixels:
+                if (
+                    nearest_owner_distance is None
+                    or nearest_owner_distance > self.owner_max_distance_pixels
+                ):
                     unattended_since = self._unattended_since.setdefault(key, timestamp)
                     unattended_seconds = (timestamp - unattended_since).total_seconds()
                 else:
@@ -73,7 +82,10 @@ class AbandonedObjectDetector:
                     continue
 
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
 
                 self._counter += 1
@@ -91,8 +103,14 @@ class AbandonedObjectDetector:
                         "frame_index": frame_index,
                         "stationary_seconds": round(stationary_seconds, 2),
                         "unattended_seconds": round(unattended_seconds, 2),
-                        "owner_max_distance_pixels": round(self.owner_max_distance_pixels, 2),
-                        "nearest_owner_distance_pixels": round(nearest_owner_distance, 2) if nearest_owner_distance is not None else None,
+                        "owner_max_distance_pixels": round(
+                            self.owner_max_distance_pixels, 2
+                        ),
+                        "nearest_owner_distance_pixels": (
+                            round(nearest_owner_distance, 2)
+                            if nearest_owner_distance is not None
+                            else None
+                        ),
                         "fps": round(fps, 2),
                     }
                 )
@@ -104,7 +122,9 @@ class AbandonedObjectDetector:
 
         return events
 
-    def _stationary_seconds(self, key: tuple[str, int], track: Track, timestamp: datetime) -> float:
+    def _stationary_seconds(
+        self, key: tuple[str, int], track: Track, timestamp: datetime
+    ) -> float:
         center = track.center
         anchor = self._anchor_state.get(key)
         if anchor is None:

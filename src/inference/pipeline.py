@@ -30,7 +30,6 @@ from src.io.video import VideoSource, open_video_source
 from src.utils.draw import draw_frame
 from src.utils.timing import FpsMeter, RollingTimingStats
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -75,8 +74,12 @@ class SentinelPipeline:
         self.wrong_way = WrongWayDetector(
             enabled=bool(wrong_way_cfg.get("enabled", True)),
             cooldown_seconds=float(wrong_way_cfg.get("cooldown_seconds", 10)),
-            min_displacement_pixels=float(wrong_way_cfg.get("min_displacement_pixels", 25)),
-            target_classes=list(wrong_way_cfg.get("target_classes", ["person", "car", "truck", "bus"])),
+            min_displacement_pixels=float(
+                wrong_way_cfg.get("min_displacement_pixels", 25)
+            ),
+            target_classes=list(
+                wrong_way_cfg.get("target_classes", ["person", "car", "truck", "bus"])
+            ),
         )
         self.after_hours = AfterHoursOccupancyDetector(
             enabled=bool(after_hours_cfg.get("enabled", True)),
@@ -90,24 +93,40 @@ class SentinelPipeline:
             enabled=bool(vehicle_zone_cfg.get("enabled", True)),
             cooldown_seconds=float(vehicle_zone_cfg.get("cooldown_seconds", 5)),
             target_classes=list(
-                vehicle_zone_cfg.get("target_classes", ["car", "truck", "bus", "motorcycle", "bicycle"])
+                vehicle_zone_cfg.get(
+                    "target_classes", ["car", "truck", "bus", "motorcycle", "bicycle"]
+                )
             ),
         )
         self.abandoned_object = AbandonedObjectDetector(
             enabled=bool(abandoned_object_cfg.get("enabled", True)),
             cooldown_seconds=float(abandoned_object_cfg.get("cooldown_seconds", 30)),
-            unattended_seconds=float(abandoned_object_cfg.get("unattended_seconds", 20)),
-            min_stationary_seconds=float(abandoned_object_cfg.get("min_stationary_seconds", 8)),
-            stationary_radius_pixels=float(abandoned_object_cfg.get("stationary_radius_pixels", 20)),
-            owner_max_distance_pixels=float(abandoned_object_cfg.get("owner_max_distance_pixels", 80)),
-            target_classes=list(abandoned_object_cfg.get("target_classes", ["backpack", "suitcase", "handbag", "bicycle"])),
+            unattended_seconds=float(
+                abandoned_object_cfg.get("unattended_seconds", 20)
+            ),
+            min_stationary_seconds=float(
+                abandoned_object_cfg.get("min_stationary_seconds", 8)
+            ),
+            stationary_radius_pixels=float(
+                abandoned_object_cfg.get("stationary_radius_pixels", 20)
+            ),
+            owner_max_distance_pixels=float(
+                abandoned_object_cfg.get("owner_max_distance_pixels", 80)
+            ),
+            target_classes=list(
+                abandoned_object_cfg.get(
+                    "target_classes", ["backpack", "suitcase", "handbag", "bicycle"]
+                )
+            ),
             owner_classes=list(abandoned_object_cfg.get("owner_classes", ["person"])),
         )
         output_cfg = config["output"]
         self.event_logger = EventLogger(output_cfg["log_path"])
         self.health_monitor = CameraHealthMonitor(
             camera_id=self.camera_id,
-            status_path=Path(output_cfg.get("health_status_path", "data/outputs/camera_health.json")),
+            status_path=Path(
+                output_cfg.get("health_status_path", "data/outputs/camera_health.json")
+            ),
         )
         self.recorder = AlertRecorder(
             alerts_dir=output_cfg["alerts_dir"],
@@ -115,7 +134,9 @@ class SentinelPipeline:
             save_annotated_video=bool(output_cfg.get("save_annotated_video", True)),
             buffer_seconds=float(output_cfg.get("buffer_seconds", 3)),
             post_event_seconds=float(output_cfg.get("post_event_seconds", 3)),
-            duplicate_suppression_seconds=float(output_cfg.get("duplicate_suppression_seconds", 10)),
+            duplicate_suppression_seconds=float(
+                output_cfg.get("duplicate_suppression_seconds", 10)
+            ),
             clip_writer_queue_size=int(output_cfg.get("clip_writer_queue_size", 16)),
         )
         self.show_window = bool(output_cfg.get("show_window", False))
@@ -125,7 +146,9 @@ class SentinelPipeline:
         motion_cfg = self.runtime_cfg.get("motion_compensation", {})
         self.motion_compensator = GlobalMotionCompensator(
             enabled=bool(motion_cfg.get("enabled", False)),
-            static_camera_assumption=bool(motion_cfg.get("static_camera_assumption", True)),
+            static_camera_assumption=bool(
+                motion_cfg.get("static_camera_assumption", True)
+            ),
             method=str(motion_cfg.get("method", "affine")),
             max_corners=int(motion_cfg.get("max_corners", 300)),
             quality_level=float(motion_cfg.get("quality_level", 0.01)),
@@ -143,7 +166,11 @@ class SentinelPipeline:
         with open_video_source(source) as capture:
             fps = capture.fps or 30.0
             fps_meter = FpsMeter()
-            stage_stats = RollingTimingStats(window_size=max(1, int(self.runtime_cfg.get("timing_log_interval_frames", 120))))
+            stage_stats = RollingTimingStats(
+                window_size=max(
+                    1, int(self.runtime_cfg.get("timing_log_interval_frames", 120))
+                )
+            )
             frame_index = 0
             consecutive_read_failures = 0
             self.recorder.prepare_video_writer(capture.width, capture.height, fps)
@@ -157,7 +184,10 @@ class SentinelPipeline:
                     if self._handle_read_failure(capture, consecutive_read_failures):
                         fps = capture.fps or fps or 30.0
                         continue
-                    LOGGER.warning("Stopping pipeline after %s consecutive frame read failures.", consecutive_read_failures)
+                    LOGGER.warning(
+                        "Stopping pipeline after %s consecutive frame read failures.",
+                        consecutive_read_failures,
+                    )
                     self.health_monitor.mark_offline()
                     break
                 consecutive_read_failures = 0
@@ -176,17 +206,24 @@ class SentinelPipeline:
                     try:
                         detections = self.detector.detect(inference_frame)
                     except Exception:
-                        LOGGER.exception("Detector failed on frame %s. Continuing with empty detections.", frame_index)
+                        LOGGER.exception(
+                            "Detector failed on frame %s. Continuing with empty detections.",
+                            frame_index,
+                        )
                         self.health_monitor.mark_detector_failure()
                         detections = []
-                detections = self._scale_detections_to_frame(detections, inference_frame, frame)
+                detections = self._scale_detections_to_frame(
+                    detections, inference_frame, frame
+                )
 
                 with stage_stats.measure("track"):
                     tracks = self.tracker.update(
                         detections,
                         frame_index=frame_index,
                         frame=frame,
-                        motion_transform=motion_result.matrix if motion_result.estimated else None,
+                        motion_transform=(
+                            motion_result.matrix if motion_result.estimated else None
+                        ),
                     )
                 self._project_tracks_to_ground_plane(tracks)
 
@@ -195,8 +232,14 @@ class SentinelPipeline:
 
                 with stage_stats.measure("alerts"):
                     for event in events:
-                        snapshot_path, clip_path, metadata_path = self.recorder.start_alert(event=event, frame=frame, fps=fps)
-                        if snapshot_path is None or clip_path is None or metadata_path is None:
+                        snapshot_path, clip_path, metadata_path = (
+                            self.recorder.start_alert(event=event, frame=frame, fps=fps)
+                        )
+                        if (
+                            snapshot_path is None
+                            or clip_path is None
+                            or metadata_path is None
+                        ):
                             continue
                         event["snapshot_path"] = snapshot_path
                         event["clip_path"] = clip_path
@@ -223,8 +266,17 @@ class SentinelPipeline:
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
 
-                if frame_index > 0 and frame_index % max(1, int(self.runtime_cfg.get("timing_log_interval_frames", 120))) == 0:
-                    LOGGER.info("Stage timing averages (ms): %s", stage_stats.summary_ms())
+                if (
+                    frame_index > 0
+                    and frame_index
+                    % max(
+                        1, int(self.runtime_cfg.get("timing_log_interval_frames", 120))
+                    )
+                    == 0
+                ):
+                    LOGGER.info(
+                        "Stage timing averages (ms): %s", stage_stats.summary_ms()
+                    )
 
                 frame_index += 1
 
@@ -233,7 +285,9 @@ class SentinelPipeline:
             if self.show_window:
                 cv2.destroyAllWindows()
 
-    def _handle_read_failure(self, capture: VideoSource, consecutive_read_failures: int) -> bool:
+    def _handle_read_failure(
+        self, capture: VideoSource, consecutive_read_failures: int
+    ) -> bool:
         threshold = int(self.input_cfg.get("read_failure_threshold", 30))
         if consecutive_read_failures < max(1, threshold):
             return True
@@ -242,7 +296,11 @@ class SentinelPipeline:
         reconnect_attempts = int(self.input_cfg.get("reconnect_attempts", 3))
         backoff_seconds = float(self.input_cfg.get("reconnect_backoff_seconds", 1.0))
         for attempt in range(1, reconnect_attempts + 1):
-            LOGGER.warning("Frame read timeout/failure threshold hit. Reconnecting RTSP source (attempt %s/%s).", attempt, reconnect_attempts)
+            LOGGER.warning(
+                "Frame read timeout/failure threshold hit. Reconnecting RTSP source (attempt %s/%s).",
+                attempt,
+                reconnect_attempts,
+            )
             if backoff_seconds > 0:
                 time.sleep(backoff_seconds)
             if capture.reopen():
@@ -266,7 +324,9 @@ class SentinelPipeline:
         scale = resize_height / max(height, 1)
         return cv2.resize(frame, (max(1, int(width * scale)), resize_height))
 
-    def _should_skip_frame(self, frame_index: int, stage_stats: RollingTimingStats) -> bool:
+    def _should_skip_frame(
+        self, frame_index: int, stage_stats: RollingTimingStats
+    ) -> bool:
         frame_skip = int(self.runtime_cfg.get("frame_skip", 0))
         if frame_skip > 0 and frame_index % (frame_skip + 1) != 0:
             return True
@@ -279,7 +339,9 @@ class SentinelPipeline:
             return False
         return frame_index % 2 == 1
 
-    def _scale_detections_to_frame(self, detections: list[Detection], inference_frame, original_frame) -> list[Detection]:
+    def _scale_detections_to_frame(
+        self, detections: list[Detection], inference_frame, original_frame
+    ) -> list[Detection]:
         if inference_frame.shape[:2] == original_frame.shape[:2]:
             return detections
         src_height, src_width = inference_frame.shape[:2]
@@ -299,12 +361,18 @@ class SentinelPipeline:
             )
         return scaled
 
-    def _build_ground_plane_mapper(self, perspective_cfg: dict[str, Any]) -> GroundPlaneMapper | None:
+    def _build_ground_plane_mapper(
+        self, perspective_cfg: dict[str, Any]
+    ) -> GroundPlaneMapper | None:
         if not bool(perspective_cfg.get("enabled", False)):
             return None
         return GroundPlaneMapper.from_correspondences(
-            image_points=[tuple(point) for point in perspective_cfg.get("image_points", [])],
-            world_points=[tuple(point) for point in perspective_cfg.get("world_points", [])],
+            image_points=[
+                tuple(point) for point in perspective_cfg.get("image_points", [])
+            ],
+            world_points=[
+                tuple(point) for point in perspective_cfg.get("world_points", [])
+            ],
         )
 
     def _attach_projected_zone_geometry(self) -> None:
@@ -403,13 +471,21 @@ class SentinelPipeline:
         occupancy = self._zone_occupancy_summary(tracks)
         for event in events:
             if event["track_id"] is not None:
-                matched_track = next((track for track in tracks if track.track_id == event["track_id"]), None)
+                matched_track = next(
+                    (track for track in tracks if track.track_id == event["track_id"]),
+                    None,
+                )
                 if matched_track and matched_track.world_center is not None:
-                    event["world_position"] = [round(matched_track.world_center[0], 3), round(matched_track.world_center[1], 3)]
+                    event["world_position"] = [
+                        round(matched_track.world_center[0], 3),
+                        round(matched_track.world_center[1], 3),
+                    ]
             zone_occupancy = occupancy.get(event["zone"])
             if zone_occupancy:
                 event.update(zone_occupancy)
-            self._active_alerts.append({**event, "expires_at": timestamp.timestamp() + 3.0})
+            self._active_alerts.append(
+                {**event, "expires_at": timestamp.timestamp() + 3.0}
+            )
         return events
 
     def _dispatch_alert(self, event: dict[str, Any]) -> None:
@@ -418,15 +494,25 @@ class SentinelPipeline:
 
         endpoint = self.dashboard_cfg.get("endpoint")
         if not endpoint:
-            LOGGER.warning("Dashboard dispatch is enabled but no endpoint is configured.")
+            LOGGER.warning(
+                "Dashboard dispatch is enabled but no endpoint is configured."
+            )
             return
 
         payload = json.dumps(event).encode("utf-8")
-        req = request.Request(endpoint, data=payload, headers={"Content-Type": "application/json"})
+        req = request.Request(
+            endpoint, data=payload, headers={"Content-Type": "application/json"}
+        )
         try:
-            request.urlopen(req, timeout=float(self.dashboard_cfg.get("timeout_seconds", 1.0))).read()
+            request.urlopen(
+                req, timeout=float(self.dashboard_cfg.get("timeout_seconds", 1.0))
+            ).read()
         except Exception:
-            LOGGER.exception("Failed to dispatch alert %s to dashboard endpoint %s", event.get("event_id"), endpoint)
+            LOGGER.exception(
+                "Failed to dispatch alert %s to dashboard endpoint %s",
+                event.get("event_id"),
+                endpoint,
+            )
 
     def _update_track_history(self, tracks: list[Track]) -> None:
         active_ids = {track.track_id for track in tracks}
@@ -437,7 +523,9 @@ class SentinelPipeline:
             if track_id not in active_ids:
                 del self._track_history[track_id]
 
-    def _update_dwell_timers(self, tracks: list[Track], timestamp: datetime) -> dict[int, float]:
+    def _update_dwell_timers(
+        self, tracks: list[Track], timestamp: datetime
+    ) -> dict[int, float]:
         dwell_timers: dict[int, float] = {}
         active_keys: set[tuple[str, int]] = set()
         for zone in polygon_zones(self.zones, tag="restricted"):
@@ -458,7 +546,11 @@ class SentinelPipeline:
 
     def _current_active_alerts(self, timestamp: datetime) -> list[dict[str, Any]]:
         now_ts = timestamp.timestamp()
-        self._active_alerts = [event for event in self._active_alerts if event.get("expires_at", 0.0) >= now_ts]
+        self._active_alerts = [
+            event
+            for event in self._active_alerts
+            if event.get("expires_at", 0.0) >= now_ts
+        ]
         return list(self._active_alerts)
 
     def _zone_occupancy_summary(self, tracks: list[Track]) -> dict[str, dict[str, Any]]:
@@ -467,7 +559,9 @@ class SentinelPipeline:
             occupants = [track for track in tracks if zone.contains_track(track)]
             zone_summary: dict[str, Any] = {"zone_occupancy_count": len(occupants)}
             if zone.world_area and zone.world_area > 0:
-                zone_summary["zone_density_per_100_units2"] = round((len(occupants) / zone.world_area) * 100.0, 3)
+                zone_summary["zone_density_per_100_units2"] = round(
+                    (len(occupants) / zone.world_area) * 100.0, 3
+                )
                 zone_summary["zone_world_area"] = round(zone.world_area, 3)
             summary[zone.name] = zone_summary
         return summary

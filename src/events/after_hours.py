@@ -43,11 +43,16 @@ class AfterHoursOccupancyDetector:
         local_ts = timestamp.astimezone(ZoneInfo(self.timezone_name))
         for zone in zones:
             for track in tracks:
-                if track.label not in self.target_classes or not zone.contains_track(track):
+                if track.label not in self.target_classes or not zone.contains_track(
+                    track
+                ):
                     continue
                 key = (zone.name, track.track_id)
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
                 self._counter += 1
                 self._last_event_ts[key] = timestamp

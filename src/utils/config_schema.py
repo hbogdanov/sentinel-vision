@@ -3,10 +3,27 @@ from __future__ import annotations
 from typing import Literal
 from zoneinfo import ZoneInfo
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, TypeAdapter, field_validator, model_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    field_validator,
+    model_validator,
+)
 
-
-SUPPORTED_CLASSES = {"person", "car", "truck", "bus", "motorcycle", "bicycle", "backpack", "handbag", "suitcase"}
+SUPPORTED_CLASSES = {
+    "person",
+    "car",
+    "truck",
+    "bus",
+    "motorcycle",
+    "bicycle",
+    "backpack",
+    "handbag",
+    "suitcase",
+}
 
 
 class ModelConfig(BaseModel):
@@ -60,13 +77,17 @@ class TrackingConfig(BaseModel):
     @classmethod
     def validate_positive_int(cls, value: int) -> int:
         if value < 1:
-            raise ValueError("tracking.max_age_frames and tracking.min_hits must be >= 1.")
+            raise ValueError(
+                "tracking.max_age_frames and tracking.min_hits must be >= 1."
+            )
         return value
 
     @model_validator(mode="after")
     def validate_threshold_order(self) -> "TrackingConfig":
         if self.low_score_threshold > self.high_score_threshold:
-            raise ValueError("tracking.low_score_threshold must be <= tracking.high_score_threshold.")
+            raise ValueError(
+                "tracking.low_score_threshold must be <= tracking.high_score_threshold."
+            )
         return self
 
 
@@ -99,7 +120,9 @@ class LineCrossingEventConfig(IntrusionEventConfig):
 
 class WrongWayEventConfig(IntrusionEventConfig):
     min_displacement_pixels: float = 25.0
-    target_classes: list[str] = Field(default_factory=lambda: ["person", "car", "truck", "bus"])
+    target_classes: list[str] = Field(
+        default_factory=lambda: ["person", "car", "truck", "bus"]
+    )
 
     @field_validator("min_displacement_pixels")
     @classmethod
@@ -119,7 +142,9 @@ class AfterHoursEventConfig(IntrusionEventConfig):
     start_time: str = "08:00"
     end_time: str = "18:00"
     timezone: str = "America/New_York"
-    target_classes: list[str] = Field(default_factory=lambda: ["person", "backpack", "handbag", "suitcase"])
+    target_classes: list[str] = Field(
+        default_factory=lambda: ["person", "backpack", "handbag", "suitcase"]
+    )
 
     @field_validator("start_time", "end_time")
     @classmethod
@@ -146,17 +171,23 @@ class AfterHoursEventConfig(IntrusionEventConfig):
     @field_validator("target_classes")
     @classmethod
     def validate_classes(cls, value: list[str]) -> list[str]:
-        _validate_supported_classes(value, field_name="events.after_hours_occupancy.target_classes")
+        _validate_supported_classes(
+            value, field_name="events.after_hours_occupancy.target_classes"
+        )
         return value
 
 
 class VehicleZoneEventConfig(IntrusionEventConfig):
-    target_classes: list[str] = Field(default_factory=lambda: ["car", "truck", "bus", "motorcycle", "bicycle"])
+    target_classes: list[str] = Field(
+        default_factory=lambda: ["car", "truck", "bus", "motorcycle", "bicycle"]
+    )
 
     @field_validator("target_classes")
     @classmethod
     def validate_classes(cls, value: list[str]) -> list[str]:
-        _validate_supported_classes(value, field_name="events.vehicle_in_pedestrian_zone.target_classes")
+        _validate_supported_classes(
+            value, field_name="events.vehicle_in_pedestrian_zone.target_classes"
+        )
         return value
 
 
@@ -165,7 +196,9 @@ class AbandonedObjectEventConfig(IntrusionEventConfig):
     min_stationary_seconds: float = 8.0
     stationary_radius_pixels: float = 20.0
     owner_max_distance_pixels: float = 80.0
-    target_classes: list[str] = Field(default_factory=lambda: ["backpack", "suitcase", "handbag", "bicycle"])
+    target_classes: list[str] = Field(
+        default_factory=lambda: ["backpack", "suitcase", "handbag", "bicycle"]
+    )
     owner_classes: list[str] = Field(default_factory=lambda: ["person"])
 
     @field_validator(
@@ -183,24 +216,36 @@ class AbandonedObjectEventConfig(IntrusionEventConfig):
     @field_validator("target_classes")
     @classmethod
     def validate_target_classes(cls, value: list[str]) -> list[str]:
-        _validate_supported_classes(value, field_name="events.abandoned_object.target_classes")
+        _validate_supported_classes(
+            value, field_name="events.abandoned_object.target_classes"
+        )
         return value
 
     @field_validator("owner_classes")
     @classmethod
     def validate_owner_classes(cls, value: list[str]) -> list[str]:
-        _validate_supported_classes(value, field_name="events.abandoned_object.owner_classes")
+        _validate_supported_classes(
+            value, field_name="events.abandoned_object.owner_classes"
+        )
         return value
 
 
 class EventsConfig(BaseModel):
     intrusion: IntrusionEventConfig = Field(default_factory=IntrusionEventConfig)
     loitering: LoiteringEventConfig = Field(default_factory=LoiteringEventConfig)
-    line_crossing: LineCrossingEventConfig = Field(default_factory=LineCrossingEventConfig)
+    line_crossing: LineCrossingEventConfig = Field(
+        default_factory=LineCrossingEventConfig
+    )
     wrong_way: WrongWayEventConfig = Field(default_factory=WrongWayEventConfig)
-    after_hours_occupancy: AfterHoursEventConfig = Field(default_factory=AfterHoursEventConfig)
-    vehicle_in_pedestrian_zone: VehicleZoneEventConfig = Field(default_factory=VehicleZoneEventConfig)
-    abandoned_object: AbandonedObjectEventConfig = Field(default_factory=AbandonedObjectEventConfig)
+    after_hours_occupancy: AfterHoursEventConfig = Field(
+        default_factory=AfterHoursEventConfig
+    )
+    vehicle_in_pedestrian_zone: VehicleZoneEventConfig = Field(
+        default_factory=VehicleZoneEventConfig
+    )
+    abandoned_object: AbandonedObjectEventConfig = Field(
+        default_factory=AbandonedObjectEventConfig
+    )
 
 
 class InputConfig(BaseModel):
@@ -240,21 +285,27 @@ class RuntimeConfig(BaseModel):
         @classmethod
         def validate_positive_int(cls, value: int) -> int:
             if value < 1:
-                raise ValueError("runtime.motion_compensation integer settings must be >= 1.")
+                raise ValueError(
+                    "runtime.motion_compensation integer settings must be >= 1."
+                )
             return value
 
         @field_validator("quality_level", "min_distance", "ransac_threshold")
         @classmethod
         def validate_positive_float(cls, value: float) -> float:
             if value <= 0:
-                raise ValueError("runtime.motion_compensation positive settings must be > 0.")
+                raise ValueError(
+                    "runtime.motion_compensation positive settings must be > 0."
+                )
             return value
 
         @field_validator("smoothing_factor")
         @classmethod
         def validate_smoothing_factor(cls, value: float) -> float:
             if not 0.0 <= value <= 1.0:
-                raise ValueError("runtime.motion_compensation.smoothing_factor must be in [0, 1].")
+                raise ValueError(
+                    "runtime.motion_compensation.smoothing_factor must be in [0, 1]."
+                )
             return value
 
     frame_skip: int = 0
@@ -263,9 +314,13 @@ class RuntimeConfig(BaseModel):
     resize_width: int = 0
     resize_height: int = 0
     timing_log_interval_frames: int = 120
-    motion_compensation: MotionCompensationConfig = Field(default_factory=MotionCompensationConfig)
+    motion_compensation: MotionCompensationConfig = Field(
+        default_factory=MotionCompensationConfig
+    )
 
-    @field_validator("frame_skip", "resize_width", "resize_height", "timing_log_interval_frames")
+    @field_validator(
+        "frame_skip", "resize_width", "resize_height", "timing_log_interval_frames"
+    )
     @classmethod
     def validate_non_negative_int(cls, value: int) -> int:
         if value < 0:
@@ -290,9 +345,13 @@ class PerspectiveConfig(BaseModel):
         if not self.enabled:
             return self
         if len(self.image_points) < 4 or len(self.world_points) < 4:
-            raise ValueError("perspective requires at least 4 image_points and 4 world_points.")
+            raise ValueError(
+                "perspective requires at least 4 image_points and 4 world_points."
+            )
         if len(self.image_points) != len(self.world_points):
-            raise ValueError("perspective image_points and world_points must have the same length.")
+            raise ValueError(
+                "perspective image_points and world_points must have the same length."
+            )
         _validate_points(self.image_points)
         _validate_points(self.world_points)
         return self
@@ -337,7 +396,9 @@ class OutputConfig(BaseModel):
     clip_writer_queue_size: int = 16
     health_status_path: str = "data/outputs/camera_health.json"
 
-    @field_validator("buffer_seconds", "post_event_seconds", "duplicate_suppression_seconds")
+    @field_validator(
+        "buffer_seconds", "post_event_seconds", "duplicate_suppression_seconds"
+    )
     @classmethod
     def validate_non_negative(cls, value: float) -> float:
         if value < 0:
@@ -367,7 +428,9 @@ class DashboardConfig(BaseModel):
     @model_validator(mode="after")
     def validate_endpoint(self) -> "DashboardConfig":
         if self.enabled and not self.endpoint:
-            raise ValueError("dashboard.endpoint is required when dashboard.enabled is true.")
+            raise ValueError(
+                "dashboard.endpoint is required when dashboard.enabled is true."
+            )
         if self.endpoint:
             TypeAdapter(AnyHttpUrl).validate_python(self.endpoint)
         return self
@@ -390,7 +453,9 @@ class PolygonZoneConfig(BaseModel):
 
     @field_validator("points")
     @classmethod
-    def validate_points(cls, value: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    def validate_points(
+        cls, value: list[tuple[float, float]]
+    ) -> list[tuple[float, float]]:
         if len(value) < 3:
             raise ValueError("polygon zones must define at least 3 points.")
         _validate_points(value)
@@ -398,7 +463,9 @@ class PolygonZoneConfig(BaseModel):
 
     @field_validator("world_points")
     @classmethod
-    def validate_world_points(cls, value: list[tuple[float, float]] | None) -> list[tuple[float, float]] | None:
+    def validate_world_points(
+        cls, value: list[tuple[float, float]] | None
+    ) -> list[tuple[float, float]] | None:
         if value is None:
             return value
         if len(value) < 3:
@@ -423,7 +490,9 @@ class LineZoneConfig(BaseModel):
 
     @field_validator("points")
     @classmethod
-    def validate_points(cls, value: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    def validate_points(
+        cls, value: list[tuple[float, float]]
+    ) -> list[tuple[float, float]]:
         if len(value) != 2:
             raise ValueError("line zones must define exactly 2 points.")
         _validate_points(value)
@@ -477,4 +546,6 @@ def _validate_points(points: list[tuple[float, float]]) -> None:
 def _validate_supported_classes(value: list[str], field_name: str) -> None:
     unsupported = sorted(set(value) - SUPPORTED_CLASSES)
     if unsupported:
-        raise ValueError(f"{field_name} contains unsupported classes: {', '.join(unsupported)}.")
+        raise ValueError(
+            f"{field_name} contains unsupported classes: {', '.join(unsupported)}."
+        )

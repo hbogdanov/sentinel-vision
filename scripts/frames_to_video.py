@@ -7,21 +7,39 @@ import cv2
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Convert a dataset frame directory into an mp4 clip without ffmpeg.")
-    parser.add_argument("--frames-dir", required=True, help="Directory containing ordered image frames.")
+    parser = argparse.ArgumentParser(
+        description="Convert a dataset frame directory into an mp4 clip without ffmpeg."
+    )
+    parser.add_argument(
+        "--frames-dir", required=True, help="Directory containing ordered image frames."
+    )
     parser.add_argument("--out", required=True, help="Output mp4 path.")
-    parser.add_argument("--fps", type=float, required=True, help="Output frames per second.")
-    parser.add_argument("--start-frame", type=int, default=1, help="1-based start frame.")
-    parser.add_argument("--end-frame", type=int, default=None, help="1-based end frame, inclusive.")
-    parser.add_argument("--resize-width", type=int, default=0, help="Optional output width.")
-    parser.add_argument("--resize-height", type=int, default=0, help="Optional output height.")
+    parser.add_argument(
+        "--fps", type=float, required=True, help="Output frames per second."
+    )
+    parser.add_argument(
+        "--start-frame", type=int, default=1, help="1-based start frame."
+    )
+    parser.add_argument(
+        "--end-frame", type=int, default=None, help="1-based end frame, inclusive."
+    )
+    parser.add_argument(
+        "--resize-width", type=int, default=0, help="Optional output width."
+    )
+    parser.add_argument(
+        "--resize-height", type=int, default=0, help="Optional output height."
+    )
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
     frames_dir = Path(args.frames_dir)
-    frame_paths = sorted(path for path in frames_dir.iterdir() if path.suffix.lower() in {".jpg", ".jpeg", ".png"})
+    frame_paths = sorted(
+        path
+        for path in frames_dir.iterdir()
+        if path.suffix.lower() in {".jpg", ".jpeg", ".png"}
+    )
     if not frame_paths:
         raise FileNotFoundError(f"No image frames found in {frames_dir}.")
 
@@ -35,11 +53,18 @@ def main() -> None:
     if first_frame is None:
         raise RuntimeError(f"Could not read first frame {selected_paths[0]}.")
     height, width = first_frame.shape[:2]
-    width, height = _resolve_output_size(width, height, args.resize_width, args.resize_height)
+    width, height = _resolve_output_size(
+        width, height, args.resize_width, args.resize_height
+    )
 
     output_path = Path(args.out)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    writer = cv2.VideoWriter(str(output_path), cv2.VideoWriter_fourcc(*"mp4v"), float(args.fps), (width, height))
+    writer = cv2.VideoWriter(
+        str(output_path),
+        cv2.VideoWriter_fourcc(*"mp4v"),
+        float(args.fps),
+        (width, height),
+    )
     if not writer.isOpened():
         raise RuntimeError(f"Could not create video writer for {output_path}.")
 
@@ -57,7 +82,9 @@ def main() -> None:
     print(str(output_path))
 
 
-def _resolve_output_size(src_width: int, src_height: int, requested_width: int, requested_height: int) -> tuple[int, int]:
+def _resolve_output_size(
+    src_width: int, src_height: int, requested_width: int, requested_height: int
+) -> tuple[int, int]:
     if requested_width <= 0 and requested_height <= 0:
         return src_width, src_height
     if requested_width > 0 and requested_height > 0:

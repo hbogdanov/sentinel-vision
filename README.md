@@ -37,8 +37,11 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 
 ## Demo
 
-- Short demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
+- Checked-in demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
+- Additional checked-in benchmark clips live under [data/eval/videos](data/eval/videos)
 - Evaluation bundle and reference clips: [data/eval/README.md](data/eval/README.md)
+
+Demo assets that are committed to the repo live in `data/eval/videos/`. There is no separate `data/samples/` bundle checked in.
 
 ## Setup
 
@@ -48,12 +51,18 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+For linting, tests, and local CI-style checks:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
 ## Run
 
 Run against a local video file:
 
 ```bash
-python -m src.main --config configs/default.yaml --source data/samples/demo.mp4
+python -m src.main --config configs/default.yaml --source data/eval/videos/office_intrusion_short.mp4
 ```
 
 Use a webcam:
@@ -157,13 +166,13 @@ Reproducibility details live in [docs/reproducibility.md](docs/reproducibility.m
 Generate predictions and score the benchmark in one pass:
 
 ```bash
-python scripts/run_benchmark.py --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cpu --output-json data/eval/results/latest.json --output-markdown docs/results.md
+python -m scripts.run_benchmark --manifest data/eval/benchmark_manifest.json --config configs/default.yaml --device cpu --output-json data/eval/results/latest.json --output-markdown docs/results.md
 ```
 
 Or score an existing set of prediction JSON files:
 
 ```bash
-python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
+python -m scripts.evaluate_events --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
 ```
 
 Current benchmark summary is in [docs/results.md](docs/results.md).
@@ -186,8 +195,8 @@ The benchmark manifest now supports per-clip `scene_types`, `challenge_tags`, `s
 Exact reproduction commands:
 
 ```bash
-python scripts/evaluate_events.py --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
-python scripts/render_metrics_report.py --input-json data/eval/results/latest.json --output-html docs/results_dashboard.html
+python -m scripts.evaluate_events --manifest data/eval/benchmark_manifest.json --output-json data/eval/results/latest.json --output-markdown docs/results.md
+python -m scripts.render_metrics_report --input-json data/eval/results/latest.json --output-html docs/results_dashboard.html
 ```
 
 ## Public Dataset Subset
@@ -209,7 +218,7 @@ Artifacts:
 Important distinction:
 
 - Tracking metrics on this subset are real dataset-derived results.
-- Event metrics are currently false-alert-only stress numbers because MOT17 and VisDrone do not ship event-level ground truth for this repo’s rule-based events.
+- Event metrics are currently false-alert-only stress numbers because MOT17 and VisDrone do not ship event-level ground truth for this repo's rule-based events.
 
 Original datasets are not included in Git. Raw extractions live under `data/external/`, which is ignored by the repo.
 
@@ -231,6 +240,13 @@ Health status includes:
 python -m pytest -q
 ```
 
+Local lint and format checks:
+
+```bash
+ruff check src tests scripts
+black --check src tests scripts
+```
+
 ## CI
 
 GitHub Actions runs:
@@ -238,7 +254,7 @@ GitHub Actions runs:
 - `ruff check src tests scripts`
 - `black --check src tests scripts`
 - `pytest -q`
-- an offline smoke path that evaluates the bundled benchmark, renders the HTML report, and checks `scripts/run_benchmark.py --help`
+- an offline smoke path that evaluates the bundled benchmark, renders the HTML report, and checks `python -m scripts.run_benchmark --help`
 
 ## Deployment
 

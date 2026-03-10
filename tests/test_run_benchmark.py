@@ -28,7 +28,13 @@ class _FakeMotionCompensator:
 
 
 class _FakeTrack:
-    def __init__(self, track_id: int, bbox: tuple[float, float, float, float], label: str = "person", score: float = 0.95) -> None:
+    def __init__(
+        self,
+        track_id: int,
+        bbox: tuple[float, float, float, float],
+        label: str = "person",
+        score: float = 0.95,
+    ) -> None:
         self.track_id = track_id
         self.bbox = bbox
         self.label = label
@@ -40,7 +46,14 @@ class _FakeTracker:
     def update(self, detections, frame_index, frame=None, motion_transform=None):
         if not detections:
             return []
-        return [_FakeTrack(track_id=7, bbox=detections[0].bbox, label=detections[0].label, score=detections[0].score)]
+        return [
+            _FakeTrack(
+                track_id=7,
+                bbox=detections[0].bbox,
+                label=detections[0].label,
+                score=detections[0].score,
+            )
+        ]
 
 
 class _FakeDetector:
@@ -50,8 +63,16 @@ class _FakeDetector:
     def detect(self, frame):
         detection_cls = sys.modules["src.inference.detector"].Detection
         sequence = [
-            [detection_cls(bbox=(10, 10, 20, 30), score=0.95, class_id=0, label="person")],
-            [detection_cls(bbox=(12, 10, 22, 30), score=0.94, class_id=0, label="person")],
+            [
+                detection_cls(
+                    bbox=(10, 10, 20, 30), score=0.95, class_id=0, label="person"
+                )
+            ],
+            [
+                detection_cls(
+                    bbox=(12, 10, 22, 30), score=0.94, class_id=0, label="person"
+                )
+            ],
             [],
         ]
         result = sequence[self.calls] if self.calls < len(sequence) else []
@@ -119,7 +140,9 @@ class _FakePipeline:
         ]
 
 
-def test_run_video_benchmark_exports_predictions_and_runtime(monkeypatch, tmp_path: Path) -> None:
+def test_run_video_benchmark_exports_predictions_and_runtime(
+    monkeypatch, tmp_path: Path
+) -> None:
     module = _load_module()
     monkeypatch.setattr(module, "SentinelPipeline", _FakePipeline)
     monkeypatch.setattr(module, "open_video_source", lambda source: _FakeVideoSource())

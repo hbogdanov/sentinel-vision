@@ -8,7 +8,12 @@ from src.inference.tracker import Track
 
 
 class LineCrossingDetector:
-    def __init__(self, enabled: bool = True, cooldown_seconds: float = 3.0, direction: str = "any") -> None:
+    def __init__(
+        self,
+        enabled: bool = True,
+        cooldown_seconds: float = 3.0,
+        direction: str = "any",
+    ) -> None:
         self.enabled = enabled
         self.cooldown_seconds = cooldown_seconds
         self.direction = direction
@@ -40,11 +45,16 @@ class LineCrossingDetector:
                     continue
                 if previous_side * current_side > 0:
                     continue
-                movement = "a_to_b" if previous_side > 0 and current_side < 0 else "b_to_a"
+                movement = (
+                    "a_to_b" if previous_side > 0 and current_side < 0 else "b_to_a"
+                )
                 if zone_direction != "any" and movement != zone_direction:
                     continue
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
                 self._counter += 1
                 self._last_event_ts[key] = timestamp

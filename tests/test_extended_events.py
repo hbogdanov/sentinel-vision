@@ -10,10 +10,16 @@ from src.inference.tracker import Track
 
 
 def test_line_crossing_emits_when_track_crosses_configured_direction() -> None:
-    detector = LineCrossingDetector(enabled=True, cooldown_seconds=3, direction="b_to_a")
+    detector = LineCrossingDetector(
+        enabled=True, cooldown_seconds=3, direction="b_to_a"
+    )
     zone = LineZone("tripwire", (0, 5), (10, 5), tags=("line_crossing",))
-    before = Track(track_id=1, bbox=(2, 1, 4, 3), label="person", score=0.9, last_seen_frame=0)
-    after = Track(track_id=1, bbox=(2, 7, 4, 9), label="person", score=0.9, last_seen_frame=1)
+    before = Track(
+        track_id=1, bbox=(2, 1, 4, 3), label="person", score=0.9, last_seen_frame=0
+    )
+    after = Track(
+        track_id=1, bbox=(2, 7, 4, 9), label="person", score=0.9, last_seen_frame=1
+    )
     timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
 
     first = detector.evaluate([before], [zone], 0, timestamp, 30.0, "cam_1")
@@ -25,15 +31,24 @@ def test_line_crossing_emits_when_track_crosses_configured_direction() -> None:
 
 
 def test_wrong_way_detects_motion_against_expected_direction() -> None:
-    detector = WrongWayDetector(enabled=True, cooldown_seconds=5, min_displacement_pixels=4, target_classes=["person"])
+    detector = WrongWayDetector(
+        enabled=True,
+        cooldown_seconds=5,
+        min_displacement_pixels=4,
+        target_classes=["person"],
+    )
     zone = PolygonZone(
         "lane",
         [(0, 0), (20, 0), (20, 20), (0, 20)],
         tags=("restricted",),
         metadata={"expected_direction": "right"},
     )
-    start = Track(track_id=7, bbox=(12, 5, 16, 9), label="person", score=0.92, last_seen_frame=0)
-    moved_left = Track(track_id=7, bbox=(4, 5, 8, 9), label="person", score=0.92, last_seen_frame=1)
+    start = Track(
+        track_id=7, bbox=(12, 5, 16, 9), label="person", score=0.92, last_seen_frame=0
+    )
+    moved_left = Track(
+        track_id=7, bbox=(4, 5, 8, 9), label="person", score=0.92, last_seen_frame=1
+    )
     timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
 
     early = detector.evaluate([start], [zone], 0, timestamp, 30.0, "cam_1")
@@ -53,8 +68,12 @@ def test_after_hours_occupancy_fires_outside_allowed_window() -> None:
         timezone_name="America/New_York",
         target_classes=["person"],
     )
-    zone = PolygonZone("lab", [(0, 0), (10, 0), (10, 10), (0, 10)], tags=("after_hours",))
-    track = Track(track_id=2, bbox=(1, 1, 9, 9), label="person", score=0.95, last_seen_frame=0)
+    zone = PolygonZone(
+        "lab", [(0, 0), (10, 0), (10, 10), (0, 10)], tags=("after_hours",)
+    )
+    track = Track(
+        track_id=2, bbox=(1, 1, 9, 9), label="person", score=0.95, last_seen_frame=0
+    )
     timestamp = datetime(2026, 3, 8, 2, 0, tzinfo=timezone.utc)
 
     events = detector.evaluate([track], [zone], 0, timestamp, 30.0, "cam_1")
@@ -64,10 +83,18 @@ def test_after_hours_occupancy_fires_outside_allowed_window() -> None:
 
 
 def test_vehicle_in_pedestrian_zone_fires_on_vehicle_entry() -> None:
-    detector = VehicleInPedestrianZoneDetector(enabled=True, cooldown_seconds=5, target_classes=["car"])
-    zone = PolygonZone("walkway", [(0, 0), (10, 0), (10, 10), (0, 10)], tags=("pedestrian_only",))
-    outside = Track(track_id=3, bbox=(20, 20, 30, 30), label="car", score=0.88, last_seen_frame=0)
-    inside = Track(track_id=3, bbox=(1, 1, 9, 9), label="car", score=0.88, last_seen_frame=1)
+    detector = VehicleInPedestrianZoneDetector(
+        enabled=True, cooldown_seconds=5, target_classes=["car"]
+    )
+    zone = PolygonZone(
+        "walkway", [(0, 0), (10, 0), (10, 10), (0, 10)], tags=("pedestrian_only",)
+    )
+    outside = Track(
+        track_id=3, bbox=(20, 20, 30, 30), label="car", score=0.88, last_seen_frame=0
+    )
+    inside = Track(
+        track_id=3, bbox=(1, 1, 9, 9), label="car", score=0.88, last_seen_frame=1
+    )
     timestamp = datetime(2026, 3, 8, tzinfo=timezone.utc)
 
     first = detector.evaluate([outside], [zone], 0, timestamp, 30.0, "cam_1")
@@ -89,15 +116,33 @@ def test_abandoned_object_fires_after_item_is_stationary_and_owner_leaves() -> N
         target_classes=["backpack"],
         owner_classes=["person"],
     )
-    zone = PolygonZone("bag_drop_zone", [(0, 0), (100, 0), (100, 100), (0, 100)], tags=("abandoned_object",))
-    bag = Track(track_id=10, bbox=(40, 40, 50, 52), label="backpack", score=0.93, last_seen_frame=0)
-    nearby_owner = Track(track_id=1, bbox=(48, 40, 60, 70), label="person", score=0.95, last_seen_frame=0)
-    far_owner = Track(track_id=1, bbox=(80, 40, 92, 70), label="person", score=0.95, last_seen_frame=1)
+    zone = PolygonZone(
+        "bag_drop_zone",
+        [(0, 0), (100, 0), (100, 100), (0, 100)],
+        tags=("abandoned_object",),
+    )
+    bag = Track(
+        track_id=10,
+        bbox=(40, 40, 50, 52),
+        label="backpack",
+        score=0.93,
+        last_seen_frame=0,
+    )
+    nearby_owner = Track(
+        track_id=1, bbox=(48, 40, 60, 70), label="person", score=0.95, last_seen_frame=0
+    )
+    far_owner = Track(
+        track_id=1, bbox=(80, 40, 92, 70), label="person", score=0.95, last_seen_frame=1
+    )
     start = datetime(2026, 3, 8, tzinfo=timezone.utc)
 
     first = detector.evaluate([bag, nearby_owner], [zone], 0, start, 30.0, "cam_1")
-    second = detector.evaluate([bag, far_owner], [zone], 1, start.replace(second=4), 30.0, "cam_1")
-    third = detector.evaluate([bag, far_owner], [zone], 2, start.replace(second=9), 30.0, "cam_1")
+    second = detector.evaluate(
+        [bag, far_owner], [zone], 1, start.replace(second=4), 30.0, "cam_1"
+    )
+    third = detector.evaluate(
+        [bag, far_owner], [zone], 2, start.replace(second=9), 30.0, "cam_1"
+    )
 
     assert first == []
     assert second == []
@@ -117,13 +162,31 @@ def test_abandoned_object_does_not_fire_while_item_is_still_moving() -> None:
         target_classes=["backpack"],
         owner_classes=["person"],
     )
-    zone = PolygonZone("bag_drop_zone", [(0, 0), (100, 0), (100, 100), (0, 100)], tags=("abandoned_object",))
-    bag_a = Track(track_id=10, bbox=(20, 20, 30, 32), label="backpack", score=0.93, last_seen_frame=0)
-    bag_b = Track(track_id=10, bbox=(28, 20, 38, 32), label="backpack", score=0.93, last_seen_frame=1)
+    zone = PolygonZone(
+        "bag_drop_zone",
+        [(0, 0), (100, 0), (100, 100), (0, 100)],
+        tags=("abandoned_object",),
+    )
+    bag_a = Track(
+        track_id=10,
+        bbox=(20, 20, 30, 32),
+        label="backpack",
+        score=0.93,
+        last_seen_frame=0,
+    )
+    bag_b = Track(
+        track_id=10,
+        bbox=(28, 20, 38, 32),
+        label="backpack",
+        score=0.93,
+        last_seen_frame=1,
+    )
     start = datetime(2026, 3, 8, tzinfo=timezone.utc)
 
     first = detector.evaluate([bag_a], [zone], 0, start, 30.0, "cam_1")
-    second = detector.evaluate([bag_b], [zone], 1, start.replace(second=5), 30.0, "cam_1")
+    second = detector.evaluate(
+        [bag_b], [zone], 1, start.replace(second=5), 30.0, "cam_1"
+    )
 
     assert first == []
     assert second == []

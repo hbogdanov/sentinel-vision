@@ -13,7 +13,6 @@ from typing import Any
 
 import cv2
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -46,7 +45,9 @@ class AlertRecorder:
     ) -> None:
         self.alerts_dir = Path(alerts_dir)
         self.alerts_dir.mkdir(parents=True, exist_ok=True)
-        self.annotated_video_path = Path(annotated_video_path) if annotated_video_path else None
+        self.annotated_video_path = (
+            Path(annotated_video_path) if annotated_video_path else None
+        )
         self.save_annotated_video = save_annotated_video
         self.buffer_seconds = buffer_seconds
         self.post_event_seconds = post_event_seconds
@@ -55,8 +56,12 @@ class AlertRecorder:
         self._pre_event_frames: deque[Any] = deque()
         self._active_recordings: list[_ActiveAlertRecording] = []
         self._last_alert_time: dict[tuple[str, str, str], datetime] = {}
-        self._clip_queue: queue.Queue[_FinalizeAlertTask | None] = queue.Queue(maxsize=max(1, clip_writer_queue_size))
-        self._worker = threading.Thread(target=self._worker_loop, name="alert-clip-writer", daemon=True)
+        self._clip_queue: queue.Queue[_FinalizeAlertTask | None] = queue.Queue(
+            maxsize=max(1, clip_writer_queue_size)
+        )
+        self._worker = threading.Thread(
+            target=self._worker_loop, name="alert-clip-writer", daemon=True
+        )
         self._worker.start()
 
     def prepare_video_writer(self, width: int, height: int, fps: float) -> None:
@@ -64,9 +69,14 @@ class AlertRecorder:
             return
         self.annotated_video_path.parent.mkdir(parents=True, exist_ok=True)
         safe_fps = _safe_fps(fps)
-        opened = self._open_video_writer(self.annotated_video_path, safe_fps, width, height)
+        opened = self._open_video_writer(
+            self.annotated_video_path, safe_fps, width, height
+        )
         if opened is None:
-            LOGGER.warning("Failed to open annotated video writer for %s", self.annotated_video_path)
+            LOGGER.warning(
+                "Failed to open annotated video writer for %s",
+                self.annotated_video_path,
+            )
             return
         self._writer = opened[0]
 
@@ -93,7 +103,9 @@ class AlertRecorder:
             self._enqueue_finalize(recording)
             self._active_recordings.remove(recording)
 
-    def start_alert(self, event: dict[str, Any], frame, fps: float) -> tuple[str | None, str | None, str | None]:
+    def start_alert(
+        self, event: dict[str, Any], frame, fps: float
+    ) -> tuple[str | None, str | None, str | None]:
         if self._is_duplicate(event):
             return None, None, None
 
@@ -144,7 +156,9 @@ class AlertRecorder:
         self._clip_queue.put(None)
         self._worker.join(timeout=10.0)
         if self._worker.is_alive():
-            LOGGER.warning("Alert clip writer did not shut down cleanly before timeout.")
+            LOGGER.warning(
+                "Alert clip writer did not shut down cleanly before timeout."
+            )
         if self._writer is not None:
             self._writer.release()
 
@@ -152,7 +166,10 @@ class AlertRecorder:
         try:
             self._clip_queue.put(_FinalizeAlertTask(recording=recording), timeout=1.0)
         except queue.Full:
-            LOGGER.warning("Alert clip queue is full. Finalizing %s synchronously.", recording.clip_path.name)
+            LOGGER.warning(
+                "Alert clip queue is full. Finalizing %s synchronously.",
+                recording.clip_path.name,
+            )
             self._finalize_recording(recording)
 
     def _worker_loop(self) -> None:
@@ -164,12 +181,17 @@ class AlertRecorder:
             try:
                 self._finalize_recording(task.recording)
             except Exception:
-                LOGGER.exception("Failed to finalize alert recording for %s", task.recording.clip_path)
+                LOGGER.exception(
+                    "Failed to finalize alert recording for %s",
+                    task.recording.clip_path,
+                )
             finally:
                 self._clip_queue.task_done()
 
     def _finalize_recording(self, recording: _ActiveAlertRecording) -> None:
-        clip_result = self._write_clip(recording.frames, recording.clip_path, recording.fps)
+        clip_result = self._write_clip(
+            recording.frames, recording.clip_path, recording.fps
+        )
         metadata = dict(recording.event)
         metadata["snapshot_path"] = str(recording.snapshot_path).replace("\\", "/")
         metadata["clip_path"] = str(recording.clip_path).replace("\\", "/")
@@ -181,15 +203,22 @@ class AlertRecorder:
         metadata["clip_write_ok"] = clip_result["ok"]
         metadata["clip_codec"] = clip_result["codec"]
         metadata["clip_write_error"] = clip_result["error"]
-        recording.metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+        recording.metadata_path.write_text(
+            json.dumps(metadata, indent=2), encoding="utf-8"
+        )
 
-    def _write_clip(self, frames: list, clip_path: Path, fps: float) -> dict[str, str | bool | None]:
+    def _write_clip(
+        self, frames: list, clip_path: Path, fps: float
+    ) -> dict[str, str | bool | None]:
         if not frames:
             return {"ok": False, "codec": None, "error": "no_frames"}
         height, width = frames[0].shape[:2]
         opened = self._open_video_writer(clip_path, fps, width, height)
         if opened is None:
-            LOGGER.warning("Failed to open clip writer for %s; clip metadata will record the error.", clip_path)
+            LOGGER.warning(
+                "Failed to open clip writer for %s; clip metadata will record the error.",
+                clip_path,
+            )
             return {"ok": False, "codec": None, "error": "codec_open_failed"}
         writer, codec = opened
         try:
@@ -199,10 +228,14 @@ class AlertRecorder:
             writer.release()
         return {"ok": True, "codec": codec, "error": None}
 
-    def _open_video_writer(self, path: Path, fps: float, width: int, height: int) -> tuple[cv2.VideoWriter, str] | None:
+    def _open_video_writer(
+        self, path: Path, fps: float, width: int, height: int
+    ) -> tuple[cv2.VideoWriter, str] | None:
         safe_fps = _safe_fps(fps)
         for codec in ("mp4v", "avc1", "XVID", "MJPG"):
-            writer = cv2.VideoWriter(str(path), cv2.VideoWriter_fourcc(*codec), safe_fps, (width, height))
+            writer = cv2.VideoWriter(
+                str(path), cv2.VideoWriter_fourcc(*codec), safe_fps, (width, height)
+            )
             if writer.isOpened():
                 return writer, codec
             writer.release()
@@ -214,7 +247,9 @@ class AlertRecorder:
         if last_time is None:
             return False
         current_time = _parse_event_timestamp(event["timestamp"])
-        return (current_time - last_time).total_seconds() < self.duplicate_suppression_seconds
+        return (
+            current_time - last_time
+        ).total_seconds() < self.duplicate_suppression_seconds
 
     def _event_key(self, event: dict[str, Any]) -> tuple[str, str, str]:
         return (
@@ -224,7 +259,9 @@ class AlertRecorder:
         )
 
     def _build_alert_stem(self, event: dict[str, Any]) -> str:
-        timestamp = _parse_event_timestamp(event["timestamp"]).strftime("%Y%m%dT%H%M%SZ")
+        timestamp = _parse_event_timestamp(event["timestamp"]).strftime(
+            "%Y%m%dT%H%M%SZ"
+        )
         event_type = _slugify(str(event.get("event_type", "event")))
         zone = _slugify(str(event.get("zone", "zone")))
         track_id = _slugify(str(event.get("track_id", "na")))

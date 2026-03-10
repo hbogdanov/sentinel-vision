@@ -15,7 +15,9 @@ class SQLiteAlertStore:
         self._initialize()
 
     def ingest(self, event: AlertEvent | dict[str, Any]) -> None:
-        alert = event if isinstance(event, AlertEvent) else AlertEvent.model_validate(event)
+        alert = (
+            event if isinstance(event, AlertEvent) else AlertEvent.model_validate(event)
+        )
         payload_dict = alert.model_dump(mode="json", by_alias=True)
         payload = json.dumps(payload_dict, sort_keys=True)
         with self._connect() as connection:
@@ -93,14 +95,23 @@ class SQLiteAlertStore:
 
         with self._connect() as connection:
             rows = connection.execute(query, params).fetchall()
-        return [AlertEvent.model_validate(json.loads(row["payload"])).model_dump(mode="json", by_alias=True) for row in rows]
+        return [
+            AlertEvent.model_validate(json.loads(row["payload"])).model_dump(
+                mode="json", by_alias=True
+            )
+            for row in rows
+        ]
 
     def get_alert(self, event_id: str) -> dict[str, Any] | None:
         with self._connect() as connection:
-            row = connection.execute("SELECT payload FROM alerts WHERE event_id = ?", (event_id,)).fetchone()
+            row = connection.execute(
+                "SELECT payload FROM alerts WHERE event_id = ?", (event_id,)
+            ).fetchone()
         if row is None:
             return None
-        return AlertEvent.model_validate(json.loads(row["payload"])).model_dump(mode="json", by_alias=True)
+        return AlertEvent.model_validate(json.loads(row["payload"])).model_dump(
+            mode="json", by_alias=True
+        )
 
     def stats(
         self,
@@ -119,7 +130,9 @@ class SQLiteAlertStore:
             end_time=end_time,
         )
         with self._connect() as connection:
-            total = connection.execute(f"SELECT COUNT(*) AS count FROM alerts {where_sql}", params).fetchone()["count"]
+            total = connection.execute(
+                f"SELECT COUNT(*) AS count FROM alerts {where_sql}", params
+            ).fetchone()["count"]
             by_event_type_rows = connection.execute(
                 f"SELECT event_type, COUNT(*) AS count FROM alerts {where_sql} GROUP BY event_type ORDER BY count DESC",
                 params,
@@ -134,8 +147,12 @@ class SQLiteAlertStore:
             ).fetchone()
         return {
             "total_alerts": int(total),
-            "by_event_type": {row["event_type"]: int(row["count"]) for row in by_event_type_rows},
-            "by_camera_id": {row["camera_id"]: int(row["count"]) for row in by_camera_rows},
+            "by_event_type": {
+                row["event_type"]: int(row["count"]) for row in by_event_type_rows
+            },
+            "by_camera_id": {
+                row["camera_id"]: int(row["count"]) for row in by_camera_rows
+            },
             "latest_timestamp": latest["timestamp"] if latest else None,
             "db_path": str(self.db_path).replace("\\", "/"),
         }
@@ -156,15 +173,13 @@ class SQLiteAlertStore:
 
     def camera_summaries(self) -> list[dict[str, Any]]:
         with self._connect() as connection:
-            rows = connection.execute(
-                """
+            rows = connection.execute("""
                 SELECT camera_id, COUNT(*) AS alerts, MAX(timestamp) AS latest_timestamp
                 FROM alerts
                 WHERE camera_id != ''
                 GROUP BY camera_id
                 ORDER BY camera_id ASC
-                """
-            ).fetchall()
+                """).fetchall()
         return [
             {
                 "camera_id": str(row["camera_id"]),
@@ -209,8 +224,7 @@ class SQLiteAlertStore:
 
     def _initialize(self) -> None:
         with self._connect() as connection:
-            connection.execute(
-                """
+            connection.execute("""
                 CREATE TABLE IF NOT EXISTS alerts (
                     event_id TEXT PRIMARY KEY,
                     timestamp TEXT NOT NULL,
@@ -226,9 +240,16 @@ class SQLiteAlertStore:
                     metadata_path TEXT,
                     payload TEXT NOT NULL
                 )
-                """
+                """)
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_alerts_timestamp ON alerts(timestamp DESC)"
             )
-            connection.execute("CREATE INDEX IF NOT EXISTS idx_alerts_timestamp ON alerts(timestamp DESC)")
-            connection.execute("CREATE INDEX IF NOT EXISTS idx_alerts_camera_id ON alerts(camera_id)")
-            connection.execute("CREATE INDEX IF NOT EXISTS idx_alerts_event_type ON alerts(event_type)")
-            connection.execute("CREATE INDEX IF NOT EXISTS idx_alerts_zone ON alerts(zone)")
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_alerts_camera_id ON alerts(camera_id)"
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_alerts_event_type ON alerts(event_type)"
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_alerts_zone ON alerts(zone)"
+            )

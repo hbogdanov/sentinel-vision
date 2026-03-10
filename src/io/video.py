@@ -32,7 +32,9 @@ class VideoSource:
 
     @property
     def is_rtsp(self) -> bool:
-        return isinstance(self.source, str) and self.source.lower().startswith("rtsp://")
+        return isinstance(self.source, str) and self.source.lower().startswith(
+            "rtsp://"
+        )
 
     def __enter__(self) -> "VideoSource":
         return self
@@ -49,4 +51,6 @@ def open_video_source(source: int | str) -> VideoSource:
     width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
     height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
     fps = float(capture.get(cv2.CAP_PROP_FPS) or 30.0)
-    return VideoSource(source=source, capture=capture, width=width, height=height, fps=fps)
+    return VideoSource(
+        source=source, capture=capture, width=width, height=height, fps=fps
+    )

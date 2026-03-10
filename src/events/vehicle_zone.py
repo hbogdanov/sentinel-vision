@@ -16,7 +16,9 @@ class VehicleInPedestrianZoneDetector:
     ) -> None:
         self.enabled = enabled
         self.cooldown_seconds = cooldown_seconds
-        self.target_classes = set(target_classes or ["car", "truck", "bus", "motorcycle", "bicycle"])
+        self.target_classes = set(
+            target_classes or ["car", "truck", "bus", "motorcycle", "bicycle"]
+        )
         self._inside_state: dict[tuple[str, int], bool] = {}
         self._last_event_ts: dict[tuple[str, int], datetime] = {}
         self._counter = 0
@@ -37,13 +39,18 @@ class VehicleInPedestrianZoneDetector:
         for zone in zones:
             for track in tracks:
                 key = (zone.name, track.track_id)
-                inside_now = track.label in self.target_classes and zone.contains_track(track)
+                inside_now = track.label in self.target_classes and zone.contains_track(
+                    track
+                )
                 inside_before = self._inside_state.get(key, False)
                 self._inside_state[key] = inside_now
                 if not inside_now or inside_before:
                     continue
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
                 self._counter += 1
                 self._last_event_ts[key] = timestamp

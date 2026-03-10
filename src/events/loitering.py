@@ -8,7 +8,12 @@ from src.inference.tracker import Track
 
 
 class LoiteringDetector:
-    def __init__(self, enabled: bool = True, threshold_seconds: float = 10.0, cooldown_seconds: float = 20.0) -> None:
+    def __init__(
+        self,
+        enabled: bool = True,
+        threshold_seconds: float = 10.0,
+        cooldown_seconds: float = 20.0,
+    ) -> None:
         self.enabled = enabled
         self.threshold_seconds = threshold_seconds
         self.cooldown_seconds = cooldown_seconds
@@ -44,7 +49,10 @@ class LoiteringDetector:
                     continue
 
                 last_event = self._last_event_ts.get(key)
-                if last_event and (timestamp - last_event).total_seconds() < self.cooldown_seconds:
+                if (
+                    last_event
+                    and (timestamp - last_event).total_seconds() < self.cooldown_seconds
+                ):
                     continue
 
                 self._counter += 1

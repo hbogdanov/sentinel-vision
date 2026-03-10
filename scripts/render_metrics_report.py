@@ -4,7 +4,6 @@ import argparse
 import json
 from pathlib import Path
 
-
 HTML_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
@@ -72,7 +71,9 @@ HTML_TEMPLATE = """<!doctype html>
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Render evaluation JSON into an HTML dashboard report.")
+    parser = argparse.ArgumentParser(
+        description="Render evaluation JSON into an HTML dashboard report."
+    )
     parser.add_argument("--input-json", default="data/eval/results/latest.json")
     parser.add_argument("--output-html", default="docs/results_dashboard.html")
     return parser

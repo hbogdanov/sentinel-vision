@@ -121,7 +121,9 @@ def test_bytetrack_uses_global_motion_compensation_for_camera_shift() -> None:
     second = tracker.update(
         [Detection(bbox=(30, 20, 50, 60), score=0.94, class_id=0, label="person")],
         frame_index=1,
-        motion_transform=np.array([[1.0, 0.0, 20.0], [0.0, 1.0, 0.0]], dtype=np.float32),
+        motion_transform=np.array(
+            [[1.0, 0.0, 20.0], [0.0, 1.0, 0.0]], dtype=np.float32
+        ),
     )
 
     assert [track.track_id for track in first] == [1]

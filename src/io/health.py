@@ -39,7 +39,9 @@ class CameraHealthMonitor:
 
     def mark_detector_failure(self) -> None:
         self.detector_failures += 1
-        self.last_detector_failure_timestamp = _utc_now().isoformat().replace("+00:00", "Z")
+        self.last_detector_failure_timestamp = (
+            _utc_now().isoformat().replace("+00:00", "Z")
+        )
         self.status = "degraded"
         self.persist()
 
@@ -68,7 +70,9 @@ class CameraHealthMonitor:
         }
 
     def persist(self) -> None:
-        self.status_path.write_text(json.dumps(self.snapshot(), indent=2), encoding="utf-8")
+        self.status_path.write_text(
+            json.dumps(self.snapshot(), indent=2), encoding="utf-8"
+        )
 
 
 def _utc_now() -> datetime:
