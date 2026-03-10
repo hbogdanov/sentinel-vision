@@ -11,11 +11,36 @@ Sentinel Vision is a real-time safety analytics pipeline for webcam feeds, video
 - Output: annotated video, snapshots, pre/post alert clips, JSON events, SQLite alert history
 - Backend: FastAPI alert API plus Streamlit dashboard
 
+## Results At A Glance
+
+| Evaluation slice | MOTA | IDF1 | ID switches | Effective FPS | Note |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Bundled micro-benchmark | 0.833 | 0.778 | 2 | n/a | Checked-in score-only artifact from bundled reference predictions |
+| Public-dataset CPU baseline | 0.228 | 0.347 | 89 | 19.869 | `edge_cpu` stress-test baseline on MOT17 + VisDrone subset |
+| Public-dataset tuned tracking pass | 0.247 | 0.369 | 89 | 19.159 | `benchmark_association_tuned` profile with stricter association |
+
+Current checked-in public-dataset results are a CPU baseline stress test used to guide tracker and event-logic tuning, not a final tuned deployment profile.
+
+## Demo
+
+![Sentinel Vision Demo Montage](demo/screenshots/demo_montage.gif)
+
+| Annotated frame | Benchmark snapshot |
+| --- | --- |
+| ![Annotated Sentinel Vision frame](demo/screenshots/annotated_demo_frame.jpg) | ![Public benchmark snapshot](demo/screenshots/public_benchmark_snapshot.jpg) |
+
 ## Architecture
 
 ![Architecture Diagram](docs/architecture.svg)
 
 More detail lives in [docs/architecture.md](docs/architecture.md).
+
+## Design Notes
+
+- Detector, tracker, event logic, rendering, and persistence are split into separate modules so the runtime can be tuned or swapped without rewriting the whole pipeline.
+- Config-driven profiles under `configs/profiles/` make it easy to compare low-latency, edge CPU, crowded-scene, and benchmark-oriented settings on the same code path.
+- Benchmarking is wired into the repo with MOT17/VisDrone subset manifests, JSON result artifacts, markdown reports, and reproducible commands instead of one-off notebook screenshots.
+- The backend is intentionally simple: FastAPI handles persistence and filtering, while Streamlit provides operator-facing triage on top of the same alert store.
 
 ## Features
 
@@ -36,13 +61,12 @@ More detail lives in [docs/architecture.md](docs/architecture.md).
 - Docker packaging for API, dashboard, and pipeline services
 - Camera health status snapshots with reconnect/degradation tracking
 
-## Demo
-
 - Checked-in demo clip: [office_intrusion_short.mp4](data/eval/videos/office_intrusion_short.mp4)
 - Additional checked-in benchmark clips live under [data/eval/videos](data/eval/videos)
 - Evaluation bundle and reference clips: [data/eval/README.md](data/eval/README.md)
+- Generated README visuals live under [demo/screenshots](demo/screenshots)
 
-Demo assets that are committed to the repo live in `data/eval/videos/`. There is no separate `data/samples/` bundle checked in.
+Demo assets that are committed to the repo live in `data/eval/videos/` and `demo/screenshots/`.
 
 ## Setup
 
@@ -120,7 +144,7 @@ Use the learned-embedding tracking profile for crowded or occlusion-heavy scenes
 python -m src.main --config configs/default.yaml --profile crowded_tracking --source data/eval/videos/mot17_04_clip.mp4
 ```
 
-## Example Alert
+## Alert Payload
 
 ```json
 {
@@ -244,6 +268,13 @@ Important distinction:
 
 - Tracking metrics on this subset are real dataset-derived results.
 - Event metrics are currently false-alert-only stress numbers because MOT17 and VisDrone do not ship event-level ground truth for this repo's rule-based events.
+
+Profile comparison snapshot:
+
+| Profile | MOTA | IDF1 | ID switches | Effective FPS | Notes |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `edge_cpu` / `public_dataset_cpu` | 0.228 | 0.347 | 89 | 19.869 | Checked-in CPU baseline |
+| `benchmark_association_tuned` | 0.247 | 0.369 | 89 | 19.159 | Global assignment + stricter association thresholds |
 
 Tracking baseline context:
 
